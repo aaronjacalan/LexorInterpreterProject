@@ -33,8 +33,7 @@ namespace LexorInterpreter.ProgramCodes
 
             return DataType switch
             {
-                DataType.BOOL => ((bool)Value ? "TRUE" : "FALSE"),
-                _             => Value.ToString()!
+                DataType.BOOL => (bool)Value ? "TRUE" : "FALSE", _ => Value.ToString()!
             };
         }
     }
