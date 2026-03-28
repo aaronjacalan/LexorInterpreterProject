@@ -1,0 +1,15 @@
+D:\CS322\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.exe
+D:\CS322\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.deps.json
+D:\CS322\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.runtimeconfig.json
+D:\CS322\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.dll
+D:\CS322\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.pdb
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.GeneratedMSBuildEditorConfig.editorconfig
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.AssemblyInfoInputs.cache
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.AssemblyInfo.cs
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.csproj.CoreCompileInputs.cache
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.sourcelink.json
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.dll
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\refint\LexorInterpreterProject.dll
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.pdb
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.genruntimeconfig.cache
+D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\ref\LexorInterpreterProject.dll

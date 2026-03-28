@@ -9,8 +9,7 @@
 
 ## How to Build
 Open PowerShell, navigate to the project folder, and run:
-```bash
-cd D:\CS322_LexorInterpreter_JacalanOng\LexorInterpreterProject
+```
 dotnet build
 ```
 
@@ -18,8 +17,8 @@ dotnet build
 
 ## How to Run
 Write your LEXOR code inside `TestYourCodeHere.txt`, then run:
-```bash
-.\bin\Debug\net9.0\LexorInterpreterProject.exe D:\CS322_LexorInterpreter_JacalanOng\LexorInterpreterProject\TestYourCodeHere.txt
+```
+.\bin\Debug\net9.0\LexorInterpreterProject.exe \CS322_LexorInterpreter_Jacalan_Ong\LexorInterpreterProject\TestYourCodeHere
 ```
 
 ---
