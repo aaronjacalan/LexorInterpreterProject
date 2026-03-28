@@ -1,0 +1,88 @@
+// ============================================================
+//  OutputPrinter.cs
+//  Executes PRINT statements.
+//
+//  Syntax:  PRINT: <token> [& <token>]*
+//
+//  Token types:
+//    $       -> newline
+//    [x]     -> escape sequence, prints x literally  (e.g. [#] -> #)
+//    "text"  -> string literal
+//    'c'     -> char literal
+//    <name>  -> variable lookup
+// ============================================================
+
+namespace LexorInterpreter.ProgramCodes
+{
+    public static class Printer
+    {
+        public static string? Execute(
+            string line,
+            int lineNumber,
+            Dictionary<string, Variable> symbolTable)
+        {
+            if (!line.StartsWith("PRINT:"))
+                return $"Line {lineNumber}: Malformed PRINT statement.";
+
+            string rest = line["PRINT:".Length..].Trim();
+            var output  = new System.Text.StringBuilder();
+
+            foreach (string token in SplitByConcatenator(rest))
+            {
+                string t = token.Trim();
+
+                if (t == "$")
+                {
+                    output.Append('\n');
+                }
+                else if (t.StartsWith("[") && t.EndsWith("]"))
+                {
+                    // Escape sequence: [#] prints #, [[] prints [, []] prints ]
+                    output.Append(t[1..^1]);
+                }
+                else if (t.StartsWith("\"") && t.EndsWith("\"") && t.Length >= 2)
+                {
+                    output.Append(t[1..^1]);
+                }
+                else if (t.StartsWith("'") && t.EndsWith("'") && t.Length == 3)
+                {
+                    output.Append(t[1]);
+                }
+                else if (symbolTable.TryGetValue(t, out Variable? variable))
+                {
+                    output.Append(variable.GetDisplayValue());
+                }
+                else
+                {
+                    return $"Line {lineNumber}: Undefined variable or invalid token '{t}' in PRINT.";
+                }
+            }
+
+            Console.Write(output.ToString());
+            return null;
+        }
+
+        // Splits on '&' while respecting quoted strings
+        private static List<string> SplitByConcatenator(string input)
+        {
+            var  parts = new List<string>();
+            int  start = 0;
+            bool inStr = false;
+            char strCh = '"';
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                char c = input[i];
+                if (!inStr && (c == '"' || c == '\'')) { inStr = true; strCh = c; }
+                else if (inStr && c == strCh)          { inStr = false; }
+                else if (!inStr && c == '&')
+                {
+                    parts.Add(input[start..i]);
+                    start = i + 1;
+                }
+            }
+            parts.Add(input[start..]);
+            return parts;
+        }
+    }
+}
