@@ -7,20 +7,20 @@ This project is a **pure interpreter** for the LEXOR language. It reads your sou
 
 **Execution flow**
 
-`Source file`  
-→ `Lexer.Tokenize()` (strip `%%` comments, remove blanks, keep line numbers)  
-→ `Interpreter.ValidateStructure()` (SCRIPT AREA / START SCRIPT / END SCRIPT)  
-→ `Interpreter.ExtractBody()` (lines between START/END)  
-→ `Interpreter.FindDeclareBoundary()`  
-→ `DECLARE ...` lines  
-→ `VariableDeclarator.Parse()` (create variables in the symbol table)  
-→ executable lines  
-→ for each line:
-  - `PRINT:` → `Printer.Execute()` (handles `&`, `$`, escapes like `[[]`, `[]]`, `[#]`)
-  - `SCAN:` → `Scanner.Execute()` (reads one comma-separated input line and assigns to variables)
-  - assignment (`x = ...`) → `VariableAssignor.Execute()`
-    → `ExpressionEvaluator.Evaluate()` (parentheses, unary `+/-/NOT`, arithmetic, comparisons, AND/OR)
-    → type-check and store result in the symbol table
+START
+→ `Program.cs` (reads the LEXOR file into a source string)
+→ `ProgramCodes/Lexer.cs` → `Lexer.Tokenize()` (strip `%%` comments, remove blanks, keep line numbers)
+→ `ProgramCodes/Interpreter.cs` → `Interpreter.ValidateStructure()` (SCRIPT AREA / START SCRIPT / END SCRIPT)
+→ `ProgramCodes/Interpreter.cs` → `Interpreter.ExtractBody()` (get lines between START/END)
+→ `ProgramCodes/Interpreter.cs` → `Interpreter.FindDeclareBoundary()` (split DECLARE vs executable lines)
+→ `ProgramCodes/VarDeclarator.cs` → `VariableDeclarator.Parse()` (build symbol table from DECLARE lines)
+→ execute each remaining line:
+  - `PRINT:` → `ProgramCodes/Printer.cs` → `Printer.Execute()`
+  - `SCAN:` → `ProgramCodes/Scanner.cs` → `Scanner.Execute()`
+  - assignment → `ProgramCodes/VarAssignor.cs` → `VariableAssignor.Execute()`
+    → `ProgramCodes/ExpressionEvaluator.cs` (uses `ExpressionTokenizer.cs` + `ExpressionParser.cs` + `ExpressionOperations.cs`)
+    → `ExpressionEvaluator.Evaluate()` → store result in `ProgramCodes/Variables.cs` (`Variable.Value`)
+END
 
 ---
 
@@ -30,21 +30,20 @@ This project is a **pure interpreter** for the LEXOR language. It reads your sou
 ---
 
 ## How to Build
-Navigate to the project folder (Where the `.csproj` is placed) and run:
+After every edit to an internal file (any `.cs` files within `ProgramCodes`), Navigate to the project folder (Where the `.csproj` is located at) and run:
 ```bash
 dotnet build
 ```
+- You must rebuild (`dotnet build`) whenever you change any `.cs` file
+- You **don't** need to rebuild when you only change `TestingCode`
+
 
 ---
 
 ## How to Run
-Write your LEXOR code inside `TestYourCodeHere` file, then run:
+Write the code inside `TestYourCodeHere` file, then run:
 ```bash
 .\bin\Debug\net9.0\LexorInterpreterProject.exe .\TestingCode
 ```
 
 ---
-
-## Notes
-- You must rebuild (`dotnet build`) whenever you change any `.cs` file
-- You do **not** need to rebuild when you only change `TestingCode`
