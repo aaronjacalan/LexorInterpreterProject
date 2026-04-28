@@ -47,6 +47,9 @@ namespace LexorInterpreter.ProgramCodes
             if (line.StartsWith("PRINT:"))
                 return Printer.Execute(line, lineNumber, _symbolTable);
 
+            if (line.StartsWith("SCAN:"))
+                return Scanner.Execute(line, lineNumber, _symbolTable);
+
             if (IsAssignment(line))
                 return VariableAssignor.Execute(line, lineNumber, _symbolTable);
 

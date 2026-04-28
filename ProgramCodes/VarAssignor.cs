@@ -81,34 +81,17 @@ namespace LexorInterpreter.ProgramCodes
                 return (refVar.Value, null);
             }
 
-            // Parse as literal
-            switch (expectedType)
-            {
-                case DataType.INT:
-                    if (int.TryParse(trimmed, out int iv)) return (iv, null);
-                    return (null, $"Line {lineNumber}: '{trimmed}' is not a valid INT.");
+            // Try expression evaluation (supports unary, arithmetic, comparisons, AND/OR/NOT).
+            // If the RHS is a simple literal, the evaluator will still accept it.
+            var (value, actualType, exprErr) = ExpressionEvaluator.Evaluate(trimmed, lineNumber, symbolTable);
+            if (exprErr != null) return (null, exprErr);
 
-                case DataType.FLOAT:
-                    if (float.TryParse(trimmed,
-                        System.Globalization.NumberStyles.Float,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        out float fv)) return (fv, null);
-                    return (null, $"Line {lineNumber}: '{trimmed}' is not a valid FLOAT.");
+            // Enforce strong typing with one practical widening: INT -> FLOAT.
+            if (expectedType == actualType) return (value, null);
+            if (expectedType == DataType.FLOAT && actualType == DataType.INT)
+                return ((float)(int)value!, null);
 
-                case DataType.CHAR:
-                    if (trimmed.Length == 3 && trimmed[0] == '\'' && trimmed[2] == '\'')
-                        return (trimmed[1], null);
-                    return (null, $"Line {lineNumber}: '{trimmed}' is not a valid CHAR — use 'c'.");
-
-                case DataType.BOOL:
-                    string b = trimmed.Trim('"').ToUpper();
-                    if (b == "TRUE")  return (true,  null);
-                    if (b == "FALSE") return (false, null);
-                    return (null, $"Line {lineNumber}: '{trimmed}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".");
-
-                default:
-                    return (null, $"Line {lineNumber}: Unsupported type.");
-            }
+            return (null, $"Line {lineNumber}: Type mismatch — cannot assign {actualType} to {expectedType}.");
         }
     }
 }
