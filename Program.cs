@@ -6,7 +6,8 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Welcome to Lexor Interpreter");
+        Console.Clear();
+        Console.WriteLine("Welcome to de Interpreter:\n");
 
         if (args.Length == 0)
         {

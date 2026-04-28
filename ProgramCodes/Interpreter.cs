@@ -1,13 +1,7 @@
-// ============================================================
-//  Interpreter.cs  -  Full Interpreter Logic
-//
-//  Pipeline:
-//    1. CommentStripper cleans lines and removes comments
-//    2. Validate SCRIPT AREA / START SCRIPT / END SCRIPT structure
-//    3. Extract body between START SCRIPT and END SCRIPT
-//    4. Run all DECLARE lines first (must be at the top of body)
-//    5. Execute remaining statements line by line
-// ============================================================
+// Interprets a LEXOR source program.
+// - Validates SCRIPT AREA / START SCRIPT / END SCRIPT structure
+// - Runs all `DECLARE` lines first to build the symbol table
+// - Executes the remaining statements line by line (PRINT, assignments, etc.)
 
 namespace LexorInterpreter.ProgramCodes
 {
@@ -43,7 +37,7 @@ namespace LexorInterpreter.ProgramCodes
             Console.WriteLine();
         }
 
-        // ── Dispatcher ───────────────────────────────────────────────────────
+        // Dispatches a single statement line.
         private string? ExecuteStatement(string line, int lineNumber)
         {
             if (line.StartsWith("PRINT:"))
@@ -55,7 +49,7 @@ namespace LexorInterpreter.ProgramCodes
             return $"Line {lineNumber}: Unrecognized statement '{line}'.";
         }
 
-        // ── Structure Validation ─────────────────────────────────────────────
+        // Validates SCRIPT AREA / START SCRIPT / END SCRIPT structure.
         private static string? ValidateStructure(List<(int LineNumber, string Content)> lines)
         {
             if (lines.Count == 0)
@@ -79,7 +73,7 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // ── Body Extraction ──────────────────────────────────────────────────
+        // Extracts lines between START SCRIPT and END SCRIPT.
         private static List<(int LineNumber, string Content)> ExtractBody(
             List<(int LineNumber, string Content)> lines)
         {
@@ -88,8 +82,7 @@ namespace LexorInterpreter.ProgramCodes
             return lines[start..end];
         }
 
-        // ── DECLARE Boundary ─────────────────────────────────────────────────
-        // DECLARE lines must all come first; this finds where they stop.
+        // Finds where leading DECLARE lines end.
         private static int FindDeclareBoundary(List<(int LineNumber, string Content)> body)
         {
             int i = 0;
@@ -98,13 +91,13 @@ namespace LexorInterpreter.ProgramCodes
             return i;
         }
 
-        // ── Assignment Heuristic ─────────────────────────────────────────────
+        // Returns true if the line looks like an assignment.
         private static bool IsAssignment(string line)
             => line.Contains('=')
                && !line.StartsWith("DECLARE")
                && !line.StartsWith("PRINT");
 
-        // ── Error Reporter ───────────────────────────────────────────────────
+        // Prints an interpreter error message.
         private static void ReportError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;

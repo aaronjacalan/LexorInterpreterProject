@@ -1,8 +1,7 @@
-// ============================================================
-//  Lexer.cs
-//  Strips %% comments, removes blank lines, and holds the
-//  full set of LEXOR reserved words.
-// ============================================================
+// Preprocesses source input for the interpreter.
+// - Removes `%%` comments and blank lines
+// - Produces (lineNumber, cleanedLine) pairs
+// - Holds the set of LEXOR reserved words
 
 namespace LexorInterpreter.ProgramCodes
 {

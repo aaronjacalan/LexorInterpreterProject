@@ -1,16 +1,7 @@
-// ============================================================
-//  OutputPrinter.cs
-//  Executes PRINT statements.
-//
-//  Syntax:  PRINT: <token> [& <token>]*
-//
-//  Token types:
-//    $       -> newline
-//    [x]     -> escape sequence, prints x literally  (e.g. [#] -> #)
-//    "text"  -> string literal
-//    'c'     -> char literal
-//    <name>  -> variable lookup
-// ============================================================
+// Handles LEXOR `PRINT:` statements.
+// - Supports `&` concatenation
+// - Prints literals, escape tokens like `[x]`, `$` newline, and variable values
+// - Errors on unknown/undefined tokens
 
 namespace LexorInterpreter.ProgramCodes
 {

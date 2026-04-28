@@ -1,17 +1,7 @@
-// ============================================================
-//  VariableDeclarator.cs
-//  Parses DECLARE statements and populates the symbol table.
-//
-//  Syntax:
-//    DECLARE <TYPE> <name>[=<value>] [, <name>[=<value>]]*
-//
-//  Rules:
-//    - Variable names: start with letter or _, followed by letters/digits/_
-//    - Names are case-sensitive
-//    - Reserved words cannot be used as variable names
-//    - All declarations must appear right after START SCRIPT
-//    - Defaults: INT=0, FLOAT=0.0, CHAR='\0', BOOL=false
-// ============================================================
+// Parses `DECLARE` statements and creates variables.
+// - Supports multiple declarations per line (comma-separated)
+// - Allows optional initial values, otherwise uses type defaults
+// - Rejects invalid names, duplicates, and reserved words
 
 using System.Text.RegularExpressions;
 
@@ -58,12 +48,15 @@ namespace LexorInterpreter.ProgramCodes
                     initValue = DefaultValue(dataType);
                 }
 
+                // Validate the variable name
                 if (!ValidName.IsMatch(varName))
                     return $"Line {lineNumber}: Invalid variable name '{varName}'.";
 
+                // Validate the variable name is not a reserved word
                 if (Lexer.IsReservedWord(varName))
                     return $"Line {lineNumber}: '{varName}' is a reserved word and cannot be a variable name.";
 
+                // Validate the variable name is not already declared
                 if (symbolTable.ContainsKey(varName))
                     return $"Line {lineNumber}: Variable '{varName}' is already declared.";
 
@@ -96,6 +89,7 @@ namespace LexorInterpreter.ProgramCodes
             return parts;
         }
 
+        // Parses a literal value into the appropriate type.
         private static string? ParseLiteral(
             string raw, DataType type, int lineNum, out object? value)
         {
@@ -129,6 +123,7 @@ namespace LexorInterpreter.ProgramCodes
             }
         }
 
+        // Returns the default value for a given data type.
         private static object? DefaultValue(DataType type) => type switch
         {
             DataType.INT   => (object)0,

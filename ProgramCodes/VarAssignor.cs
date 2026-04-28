@@ -1,14 +1,7 @@
-// ============================================================
-//  VariableAssignor.cs
-//  Executes variable assignment statements.
-//
-//  Supports:
-//    x = 5
-//    x = y = 4       (chained — all targets get the same value)
-//    a_1 = 'c'
-//    t = "TRUE"
-//    x = y           (copy from another variable)
-// ============================================================
+// Executes assignment statements.
+// - Supports chained assignment: `x = y = 4`
+// - Supports literals (INT/FLOAT/CHAR/BOOL) and copying from another variable
+// - Enforces type compatibility based on the target variable
 
 namespace LexorInterpreter.ProgramCodes
 {

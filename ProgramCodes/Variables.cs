@@ -1,10 +1,3 @@
-// ============================================================
-//  Variable.cs
-//  Contains:
-//    - DataType  (enum of all supported LEXOR data types)
-//    - Variable  (a declared variable: name, type, value)
-// ============================================================
-
 namespace LexorInterpreter.ProgramCodes
 {
     public enum DataType
