@@ -18,16 +18,20 @@ namespace LexorInterpreter.ProgramCodes
 
             var body = ExtractBody(lines);
 
+            // Split the script body into a DECLARE section (to build the symbol table)
+            // and an execution section (statements that can rely on declared variables).
             int boundary     = FindDeclareBoundary(body);
             var declareLines = body[..boundary];
             var execLines    = body[boundary..];
 
+            // Process all variable declarations first so later statements can reference them safely.
             foreach (var (lineNum, content) in declareLines)
             {
                 string? err = VariableDeclarator.Parse(content, lineNum, _symbolTable);
                 if (err != null) { ReportError(err); return; }
             }
 
+            // Execute the remaining statements in order (e.g., PRINT and assignments), stopping on first error.
             foreach (var (lineNum, content) in execLines)
             {
                 string? err = ExecuteStatement(content, lineNum);

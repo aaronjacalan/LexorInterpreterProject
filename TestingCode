@@ -1,6 +1,11 @@
 SCRIPT AREA
     START SCRIPT
-    DECLARE INT a=69, b=420
-    %% THIS IS A COMMENT 
-    PRINT: a&b
+    DECLARE INT x, y, z=5
+    DECLARE CHAR a_1='n'
+    DECLARE BOOL t="TRUE"
+    
+    x=y=4
+    a_1='c'
+    %% this is a comment
+    PRINT: x & t & z & $ & a_1 & [#] & "last"
 END SCRIPT
