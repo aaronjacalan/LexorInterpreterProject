@@ -1,8 +1,6 @@
 # LEXOR Interpreter
 
-
-## How it works
-This project is a **pure interpreter** for the LEXOR language. It reads your source file, validates the required program structure, builds a symbol table from `DECLARE` statements, then executes the rest of the script line-by-line.
+This is a **interpreter** project for the LEXOR language. It reads your source file, validates the required program structure, builds a symbol table from `DECLARE` statements, then executes the rest of the script line-by-line.
 
 **Execution flow**
 
