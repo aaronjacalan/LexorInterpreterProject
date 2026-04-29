@@ -1,4 +1,6 @@
 ﻿using LexorInterpreter.ProgramCodes;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace LexorInterpreter;
 
@@ -7,13 +9,19 @@ class Program
     static void Main(string[] args)
     {
         Console.Clear();
-        Console.WriteLine("Welcome to de Interpreter:\n\n");
+
+        void Fail(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        Console.WriteLine("LEXOR Interpreter:\n");
 
         if (args.Length == 0)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("[ERROR - Line 0] Usage: LexorInterpreter <filename>");
-            Console.ResetColor();
+            Fail("[ERROR - Line 0] Usage: LexorInterpreter <filename>");
             return;
         }
 
@@ -21,32 +29,29 @@ class Program
 
         if (!File.Exists(filePath))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[ERROR - Line 0] File not found -> '{filePath}'");
-            Console.ResetColor();
+            Fail($"[ERROR - Line 0] File not found -> '{filePath}'");
             return;
         }
 
         string sourceCode = File.ReadAllText(filePath);
         if (string.IsNullOrWhiteSpace(sourceCode))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("[ERROR - Line 0] Source file is empty.");
-            Console.ResetColor();
+            Fail("[ERROR - Line 0] Source file is empty.");
             return;
         }
 
+        var sw = Stopwatch.StartNew();
         string? err = new Interpreter().Run(sourceCode);
+        sw.Stop();
         if (err != null)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(err);
-            Console.ResetColor();
+            Fail(err);
             return;
         }
 
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Completed Successfully");
+        Console.WriteLine(
+            $"Completed in {sw.Elapsed.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture)}.");
         Console.ResetColor();
     }
 }

@@ -12,7 +12,9 @@ namespace LexorInterpreter.ProgramCodes
         {
             "SCRIPT", "AREA", "START", "END", "DECLARE",
             "PRINT", "SCAN", "INT", "CHAR", "BOOL", "FLOAT",
-            "TRUE", "FALSE", "AND", "OR", "NOT"
+            "TRUE", "FALSE", "AND", "OR", "NOT",
+            "IF", "ELSE", "FOR", "REPEAT", "WHEN"
+
         };
 
         // Returns true when the given identifier is a reserved word.
