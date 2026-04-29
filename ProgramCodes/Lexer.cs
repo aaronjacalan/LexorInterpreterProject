@@ -12,13 +12,12 @@ namespace LexorInterpreter.ProgramCodes
         {
             "SCRIPT", "AREA", "START", "END", "DECLARE",
             "PRINT", "SCAN", "INT", "CHAR", "BOOL", "FLOAT",
-            "TRUE", "FALSE", "AND", "OR", "NOT",
-            "IF", "ELSE", "FOR", "REPEAT", "WHEN"
+            "TRUE", "FALSE", "AND", "OR", "NOT"
         };
 
         // Returns true when the given identifier is a reserved word.
         public static bool IsReservedWord(string word)
-            => ReservedWords.Contains(word.ToUpper());
+            => ReservedWords.Contains(word);
 
         // Strips everything from %% onward on a single line.
         public static string StripComment(string line)

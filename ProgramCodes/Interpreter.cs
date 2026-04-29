@@ -9,12 +9,14 @@ namespace LexorInterpreter.ProgramCodes
     {
         private readonly Dictionary<string, Variable> _symbolTable = new();
 
-        public void Run(string source)
+        // Returns null on success; otherwise returns a formatted error message:
+        // [ERROR - Line #] error msg
+        public string? Run(string source)
         {
             var lines = Lexer.Tokenize(source);
 
             string? structErr = ValidateStructure(lines);
-            if (structErr != null) { ReportError(structErr); return; }
+            if (structErr != null) return NormalizeError(structErr);
 
             var body = ExtractBody(lines);
 
@@ -28,17 +30,18 @@ namespace LexorInterpreter.ProgramCodes
             foreach (var (lineNum, content) in declareLines)
             {
                 string? err = VariableDeclarator.Parse(content, lineNum, _symbolTable);
-                if (err != null) { ReportError(err); return; }
+                if (err != null) return NormalizeError(err);
             }
 
             // Execute the remaining statements in order (e.g., PRINT and assignments), stopping on first error.
             foreach (var (lineNum, content) in execLines)
             {
                 string? err = ExecuteStatement(content, lineNum);
-                if (err != null) { ReportError(err); return; }
+                if (err != null) return NormalizeError(err);
             }
 
             Console.WriteLine();
+            return null;
         }
 
         // Dispatches a single statement line.
@@ -60,22 +63,28 @@ namespace LexorInterpreter.ProgramCodes
         private static string? ValidateStructure(List<(int LineNumber, string Content)> lines)
         {
             if (lines.Count == 0)
-                return "Error: Source file is empty.";
+                return "[ERROR - Line 0] Source file is empty.";
 
             if (lines[0].Content != "SCRIPT AREA")
                 return $"Line {lines[0].LineNumber}: Program must begin with 'SCRIPT AREA'.";
 
-            bool hasStart = lines.Any(l => l.Content == "START SCRIPT");
-            bool hasEnd   = lines.Any(l => l.Content == "END SCRIPT");
+            var startLines = lines.Where(l => l.Content == "START SCRIPT").Select(l => l.LineNumber).ToList();
+            var endLines   = lines.Where(l => l.Content == "END SCRIPT").Select(l => l.LineNumber).ToList();
 
-            if (!hasStart) return "Error: Missing 'START SCRIPT'.";
-            if (!hasEnd)   return "Error: Missing 'END SCRIPT'.";
+            if (startLines.Count == 0) return "[ERROR - Line 0] Missing 'START SCRIPT'.";
+            if (endLines.Count == 0)   return "[ERROR - Line 0] Missing 'END SCRIPT'.";
+
+            if (startLines.Count > 1)
+                return $"[ERROR - Line {startLines[1]}] Duplicate 'START SCRIPT'.";
+
+            if (endLines.Count > 1)
+                return $"[ERROR - Line {endLines[1]}] Duplicate 'END SCRIPT'.";
 
             int startIdx = lines.FindIndex(l => l.Content == "START SCRIPT");
             int endIdx   = lines.FindIndex(l => l.Content == "END SCRIPT");
 
             if (startIdx >= endIdx)
-                return "Error: 'END SCRIPT' must come after 'START SCRIPT'.";
+                return $"[ERROR - Line {lines[endIdx].LineNumber}] 'END SCRIPT' must come after 'START SCRIPT'.";
 
             return null;
         }
@@ -105,11 +114,33 @@ namespace LexorInterpreter.ProgramCodes
                && !line.StartsWith("PRINT");
 
         // Prints an interpreter error message.
-        private static void ReportError(string message)
+        private static string NormalizeError(string message)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"\n[LEXOR ERROR] {message}");
-            Console.ResetColor();
+            // Already formatted.
+            if (message.StartsWith("[ERROR - Line", StringComparison.Ordinal)) return message;
+
+            // Convert "Line N: msg" into the required format.
+            const string prefix = "Line ";
+            if (message.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                int colon = message.IndexOf(':');
+                if (colon > prefix.Length)
+                {
+                    string linePart = message[prefix.Length..colon].Trim();
+                    if (int.TryParse(linePart, out int lineNum))
+                    {
+                        string rest = message[(colon + 1)..].Trim();
+                        return $"[ERROR - Line {lineNum}] {rest}";
+                    }
+                }
+            }
+
+            // Fallback when no line number is present.
+            string cleaned = message;
+            if (cleaned.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                cleaned = cleaned["Error:".Length..].Trim();
+
+            return $"[ERROR - Line 0] {cleaned}";
         }
     }
 }

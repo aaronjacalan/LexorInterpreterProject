@@ -7,12 +7,12 @@ class Program
     static void Main(string[] args)
     {
         Console.Clear();
-        Console.WriteLine("Welcome to de Interpreter:\n");
+        Console.WriteLine("Welcome to de Interpreter:\n\n");
 
         if (args.Length == 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Usage: LexorInterpreter <filename>");
+            Console.WriteLine("[ERROR - Line 0] Usage: LexorInterpreter <filename>");
             Console.ResetColor();
             return;
         }
@@ -22,12 +22,31 @@ class Program
         if (!File.Exists(filePath))
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error: File not found -> '{filePath}'");
+            Console.WriteLine($"[ERROR - Line 0] File not found -> '{filePath}'");
             Console.ResetColor();
             return;
         }
 
         string sourceCode = File.ReadAllText(filePath);
-        new Interpreter().Run(sourceCode);
+        if (string.IsNullOrWhiteSpace(sourceCode))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("[ERROR - Line 0] Source file is empty.");
+            Console.ResetColor();
+            return;
+        }
+
+        string? err = new Interpreter().Run(sourceCode);
+        if (err != null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(err);
+            Console.ResetColor();
+            return;
+        }
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Completed Successfully");
+        Console.ResetColor();
     }
 }

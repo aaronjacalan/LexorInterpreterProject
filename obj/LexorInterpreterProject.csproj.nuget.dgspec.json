@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj": {}
+    "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj": {}
   },
   "projects": {
-    "d:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj": {
+    "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
+        "projectUniqueName": "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
         "projectName": "LexorInterpreterProject",
-        "projectPath": "d:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
+        "projectPath": "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "d:\\CS322\\LexorInterpreterProject\\obj\\",
+        "outputPath": "D:\\CS322\\LexorInterpreterProject\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
