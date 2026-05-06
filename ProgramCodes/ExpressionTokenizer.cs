@@ -129,10 +129,10 @@ namespace LexorInterpreter.ProgramCodes
                         else tokens.Add(new Token(TokenKind.LT, "<"));
                         break;
                     case '=':
-                        _i++;
-                        if (PeekChar('='))
+                        if (_i + 1 < _src.Length && _src[_i + 1] == '=')
                         {
-                            _i++; tokens.Add(new Token(TokenKind.EQEQ, "=="));
+                            _i += 2;
+                            tokens.Add(new Token(TokenKind.EQEQ, "=="));
                         }
                         else
                         {

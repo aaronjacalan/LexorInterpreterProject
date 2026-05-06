@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
+      "projectUniqueName": "D:\\Cursor Projects\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
       "projectName": "LexorInterpreterProject",
-      "projectPath": "D:\\CS322\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
+      "projectPath": "D:\\Cursor Projects\\LexorInterpreterProject\\LexorInterpreterProject.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "D:\\CS322\\LexorInterpreterProject\\obj\\",
+      "outputPath": "D:\\Cursor Projects\\LexorInterpreterProject\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

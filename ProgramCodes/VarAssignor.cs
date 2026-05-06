@@ -40,22 +40,25 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Splits on bare '=', ignoring '==', '<=', '>=', '<>'
+        // Splits on bare '=' at top level (paren depth 0), ignoring '==', '<=', '>=', '<>'
         private static List<string> SplitOnAssignment(string line)
         {
             var  parts = new List<string>();
             int  start = 0;
             bool inStr = false;
             char strCh = '"';
+            int  parenDepth = 0;
 
             for (int i = 0; i < line.Length; i++)
             {
                 char c = line[i];
                 if (!inStr && (c == '\'' || c == '"')) { inStr = true; strCh = c; }
                 else if (inStr && c == strCh)          { inStr = false; }
-                else if (!inStr && c == '='
+                else if (!inStr && c == '(')           { parenDepth++; }
+                else if (!inStr && c == ')')           { if (parenDepth > 0) parenDepth--; }
+                else if (!inStr && parenDepth == 0 && c == '='
                          && (i + 1 >= line.Length || line[i + 1] != '=')
-                         && (i == 0 || (line[i - 1] != '<' && line[i - 1] != '>' && line[i - 1] != '!')))
+                         && (i == 0 || (line[i - 1] != '<' && line[i - 1] != '>' && line[i - 1] != '!' && line[i - 1] != '=')))
                 {
                     parts.Add(line[start..i]);
                     start = i + 1;

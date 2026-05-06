@@ -13,3 +13,18 @@ D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\refint\LexorInterpreterProject
 D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.pdb
 D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.genruntimeconfig.cache
 D:\CS322\LexorInterpreterProject\obj\Debug\net9.0\ref\LexorInterpreterProject.dll
+D:\Cursor Projects\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.exe
+D:\Cursor Projects\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.deps.json
+D:\Cursor Projects\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.runtimeconfig.json
+D:\Cursor Projects\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.dll
+D:\Cursor Projects\LexorInterpreterProject\bin\Debug\net9.0\LexorInterpreterProject.pdb
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.GeneratedMSBuildEditorConfig.editorconfig
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.AssemblyInfoInputs.cache
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.AssemblyInfo.cs
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.csproj.CoreCompileInputs.cache
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.sourcelink.json
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.dll
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\refint\LexorInterpreterProject.dll
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.pdb
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\LexorInterpreterProject.genruntimeconfig.cache
+D:\Cursor Projects\LexorInterpreterProject\obj\Debug\net9.0\ref\LexorInterpreterProject.dll
