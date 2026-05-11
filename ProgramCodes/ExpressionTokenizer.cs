@@ -51,7 +51,8 @@ namespace LexorInterpreter.ProgramCodes
                     if (upper is "AND") tokens.Add(new Token(TokenKind.AND, "AND"));
                     else if (upper is "OR") tokens.Add(new Token(TokenKind.OR, "OR"));
                     else if (upper is "NOT") tokens.Add(new Token(TokenKind.NOT, "NOT"));
-                    else if (upper is "TRUE" or "FALSE") tokens.Add(new Token(TokenKind.BOOL_LITERAL, upper));
+                    else if (ident is "TRUE" or "FALSE")
+                        return (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").");
                     else tokens.Add(new Token(TokenKind.IDENT, ident));
                     continue;
                 }
@@ -72,9 +73,10 @@ namespace LexorInterpreter.ProgramCodes
                         return (null, $"Line {lineNumber}: Unterminated string literal in expression.");
                     _i++; // closing "
 
-                    string upper = inner.ToUpperInvariant();
-                    if (upper is "TRUE" or "FALSE")
-                        tokens.Add(new Token(TokenKind.BOOL_LITERAL, upper));
+                    if (inner is "TRUE" or "FALSE")
+                        tokens.Add(new Token(TokenKind.BOOL_LITERAL, inner));
+                    else if (inner is "true" or "false")
+                        return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.");
                     else
                         return (null, $"Line {lineNumber}: Strings are not valid in expressions (only \"TRUE\"/\"FALSE\" are allowed).");
                     continue;

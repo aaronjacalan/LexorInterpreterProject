@@ -180,7 +180,11 @@ namespace LexorInterpreter.ProgramCodes
                 return (charTok!.Lexeme[0], DataType.CHAR, null);
 
             if (Match(TokenKind.BOOL_LITERAL, out var boolTok))
-                return (boolTok!.Lexeme.Equals("TRUE", StringComparison.OrdinalIgnoreCase), DataType.BOOL, null);
+            {
+                if (boolTok!.Lexeme == "TRUE") return (true, DataType.BOOL, null);
+                if (boolTok.Lexeme == "FALSE") return (false, DataType.BOOL, null);
+                return (null, DataType.BOOL, $"Line {_lineNumber}: BOOL literals must be uppercase TRUE/FALSE.");
+            }
 
             if (Match(TokenKind.IDENT, out var identTok))
             {

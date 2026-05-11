@@ -1,7 +1,8 @@
 SCRIPT AREA
 START SCRIPT
-DECLARE CHAR c1='A', c2='A'
-DECLARE BOOL result
-result=c1==c2
-PRINT: result
+    DECLARE INT a=7, b=-7, c=-3, d, testing
+    DECLARE BOOL f = "TRUE"
+    SCAN: d
+    testing = (a + (c * b)) - (b - d)
+    PRINT: testing & " testing " & f & " " & d
 END SCRIPT

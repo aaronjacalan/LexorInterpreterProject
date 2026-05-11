@@ -102,10 +102,19 @@ namespace LexorInterpreter.ProgramCodes
                     return (null, $"Line {lineNumber}: '{raw}' is not a valid CHAR for SCAN (enter a single character).");
 
                 case DataType.BOOL:
-                    string b = raw.Trim().Trim('"').ToUpperInvariant();
-                    if (b == "TRUE") return (true, null);
-                    if (b == "FALSE") return (false, null);
-                    return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use TRUE/FALSE).");
+                    string trimmed = raw.Trim();
+                    if (trimmed.Length >= 2 && trimmed[0] == '"' && trimmed[^1] == '"')
+                    {
+                        string b = trimmed[1..^1];
+                        if (b == "TRUE") return (true, null);
+                        if (b == "FALSE") return (false, null);
+                        if (b is "true" or "false")
+                            return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.");
+                        return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\").");
+                    }
+                    if (trimmed is "TRUE" or "FALSE" or "true" or "false")
+                        return (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").");
+                    return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\").");
 
                 default:
                     return (null, $"Line {lineNumber}: Unsupported type for SCAN.");

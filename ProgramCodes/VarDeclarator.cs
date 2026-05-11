@@ -113,9 +113,17 @@ namespace LexorInterpreter.ProgramCodes
                     return $"Line {lineNum}: '{raw}' is not a valid CHAR — use 'c'.";
 
                 case DataType.BOOL:
-                    string b = raw.Trim('"').ToUpper();
-                    if (b == "TRUE")  { value = true;  return null; }
-                    if (b == "FALSE") { value = false; return null; }
+                    if (raw.Length >= 2 && raw[0] == '"' && raw[^1] == '"')
+                    {
+                        string b = raw[1..^1];
+                        if (b == "TRUE")  { value = true;  return null; }
+                        if (b == "FALSE") { value = false; return null; }
+                        if (b is "true" or "false")
+                            return $"Line {lineNum}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.";
+                        return $"Line {lineNum}: '{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
+                    }
+                    if (raw is "TRUE" or "FALSE" or "true" or "false")
+                        return $"Line {lineNum}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").";
                     return $"Line {lineNum}: '{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
 
                 default:

@@ -51,7 +51,7 @@ class Program
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine(
-            $"Completed in {sw.Elapsed.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture)}.");
+            $"Code completed in {sw.Elapsed.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture)}.");
         Console.ResetColor();
     }
 }
