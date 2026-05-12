@@ -10,6 +10,7 @@ START
 → `ProgramCodes/Interpreter.cs` (validate structure + split DECLARE vs executable)
 → `ProgramCodes/VarDeclarator.cs` (build symbol table)
 → `ProgramCodes/Interpreter.cs` executes each line:
+  - `IF` blocks → `ProgramCodes/IfBlockParser.cs` + `ProgramCodes/IfExecutor.cs`
   - `PRINT:` → `ProgramCodes/Printer.cs`
   - `SCAN:` → `ProgramCodes/Scanner.cs`
   - assignment → `ProgramCodes/VarAssignor.cs` → expression eval (`ProgramCodes/Expression*.cs`)
