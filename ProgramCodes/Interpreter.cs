@@ -33,18 +33,46 @@ namespace LexorInterpreter.ProgramCodes
                 if (err != null) return NormalizeError(err);
             }
 
-            // Execute the remaining statements in order (e.g., PRINT and assignments), stopping on first error.
-            foreach (var (lineNum, content) in execLines)
-            {
-                string? err = ExecuteStatement(content, lineNum);
-                if (err != null) return NormalizeError(err);
-            }
+            // Execute the remaining statements in order, stopping on first error.
+            string? execErr = ExecuteLines(execLines);
+            if (execErr != null) return NormalizeError(execErr);
 
             Console.WriteLine();
             return null;
         }
 
-        // Dispatches a single statement line.
+        // Executes a list of lines, handling IF blocks and plain statements.
+        // This is the recursive entry-point used by IfExecutor for nested blocks.
+        private string? ExecuteLines(List<(int LineNumber, string Content)> lines)
+        {
+            int i = 0;
+            while (i < lines.Count)
+            {
+                var (lineNum, content) = lines[i];
+
+                if (content.StartsWith("IF ("))
+                {
+                    // Parse the entire IF/ELSE IF/ELSE chain starting here
+                    var (block, parseErr) = IfBlockParser.Parse(lines, i);
+                    if (parseErr != null) return $"Line {lineNum}: {parseErr}";
+
+                    string? execErr = IfExecutor.Execute(block!, _symbolTable, ExecuteLines);
+                    if (execErr != null) return execErr;
+
+                    // Jump past all lines consumed by the block
+                    i = block!.EndIndex + 1;
+                }
+                else
+                {
+                    string? err = ExecuteStatement(content, lineNum);
+                    if (err != null) return err;
+                    i++;
+                }
+            }
+            return null;
+        }
+
+        // Dispatches a single (non-IF) statement line.
         private string? ExecuteStatement(string line, int lineNumber)
         {
             if (line.StartsWith("PRINT:"))

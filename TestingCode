@@ -1,8 +1,24 @@
 SCRIPT AREA
 START SCRIPT
-    DECLARE INT a=7, b=-7, c=-3, d, testing
-    DECLARE BOOL f = "TRUE"
-    SCAN: d
-    testing = (a + (c * b)) - (b - d)
-    PRINT: testing & " testing " & f & " " & d
+    DECLARE INT age=0
+    DECLARE BOOL isAdult="FALSE", isElderly="FALSE"
+    SCAN: age
+    IF (age >= 18)
+        START IF
+            IF (age <=60)
+                START IF
+                    isAdult="TRUE"
+                    PRINT: "Adult: " & isAdult & $ & "Elderly: " & isElderly
+                END IF
+            ELSE
+                START IF
+                    isAdult="TRUE"
+                    isElderly="TRUE"
+                    PRINT: "Adult: " & isAdult & $ & "Elderly: " & isElderly
+                END IF
+        END IF
+    ELSE
+        START IF
+            PRINT: "Minor: " & isAdult
+        END IF
 END SCRIPT
