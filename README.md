@@ -34,5 +34,14 @@ dotnet build
 ## How to Run
 Write the code inside `TestYourCodeHere` file, then run:
 ```bash
-.\bin\Debug\net9.0\LexorInterpreterProject.exe .\TestingCode
+run
 ```
+
+To run a different input file or folder:
+```bash
+run path\to\input
+```
+
+Notes:
+- In PowerShell, use `./run` (it resolves to `run.cmd`).
+- In cmd.exe, `run` works as-is.

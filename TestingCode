@@ -1,4 +1,39 @@
 SCRIPT AREA
 START SCRIPT
+    DECLARE INT a=0, b=0, c=0, d=0, e=0
+    DECLARE FLOAT x=0.0, y=0.0, z=0.0
+    DECLARE BOOL p="FALSE", q="TRUE", r="FALSE"
+    DECLARE CHAR ch='a'
 
+    SCAN: a, b, x, y, p, q, ch
+
+    c = a + b * 3 - (a % 2) + (-b)
+    d = (a + b) * (a - b) + (a / 2) - (b / 3)
+    e = (a % 5) * (b % 7) + (a * b) - (a - b)
+
+    x = x + y * 1.5 - (x / 2.0) + (-y)
+    y = (x + y) / 3.0 + (x - y) * 0.25 + (x % 2.0)
+    z = (x * y) - (x / y) + (x + y) * (x - y)
+
+    p = NOT p
+    q = NOT (p AND q) OR (p AND NOT q)
+    r = (p OR q) AND NOT (p AND q)
+    r = r OR (a > b) AND (x >= y) AND (a + b == c - (-b))
+    p = (a > b) OR (a < b) OR (a == b) OR (a <> b)
+    q = (x >= y) AND (x <= y) OR (x == y) OR (x <> y)
+    r = r AND ("TRUE" OR "FALSE") AND NOT "FALSE"
+
+    a = +a + -b + +(a - b) + -(a * 2)
+    b = (a + b) * (a + -b) - (-a) + (+b)
+    c = (a + b + c) * (a - b - c) + (a * b * c) - (a / (b + 1))
+    d = (a + b) % (c + 1) + (d % 3) - (e % 4)
+
+    x = (x + 1.25) * (y - 2.5) + (-x) + (+y)
+    y = (x / 2.0) + (y / 3.0) - (z / 4.0) + (x % 1.5)
+    z = (x + y + z) * (x - y - z)
+
+    PRINT: "INTS: " & a & ", " & b & ", " & c & ", " & d & ", " & $
+    PRINT: "FLOATS: " & x & ", " & y & ", " & z & $ 
+    PRINT: "BOOLS: " & p & ", " & q & ", " & r & $
+    PRINT: "CHAR: " & ch
 END SCRIPT
