@@ -44,7 +44,7 @@ namespace LexorInterpreter.ProgramCodes
                 return (res, DataType.BOOL, null);
             }
 
-            // Equality / inequality allow numeric, CHAR, BOOL (same type), and numeric cross-type.
+            // Equality/inequality allow numeric, CHAR, BOOL (same type), and numeric cross-type.
             if (op is TokenKind.EQEQ or TokenKind.NEQ)
             {
                 bool eq;

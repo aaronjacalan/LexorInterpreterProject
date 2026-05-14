@@ -53,7 +53,7 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Splits on '&' while respecting quoted strings
+        // Splits on '&' while respecting quoted strings.
         private static List<string> SplitByConcatenator(string input)
         {
             var  parts = new List<string>();

@@ -9,8 +9,7 @@ namespace LexorInterpreter.ProgramCodes
     {
         private readonly Dictionary<string, Variable> _symbolTable = new();
 
-        // Returns null on success; otherwise returns a formatted error message:
-        // [ERROR - Line #] error msg
+        // Returns null on success; otherwise returns a formatted error message.
         public string? Run(string source)
         {
             var lines = Lexer.Tokenize(source);
@@ -20,8 +19,7 @@ namespace LexorInterpreter.ProgramCodes
 
             var body = ExtractBody(lines);
 
-            // Split the script body into a DECLARE section (to build the symbol table)
-            // and an execution section (statements that can rely on declared variables).
+            // Split the body into DECLARE lines and executable statements.
             int boundary     = FindDeclareBoundary(body);
             var declareLines = body[..boundary];
             var execLines    = body[boundary..];
@@ -42,7 +40,6 @@ namespace LexorInterpreter.ProgramCodes
         }
 
         // Executes a list of lines, handling IF blocks and plain statements.
-        // This is the recursive entry-point used by IfExecutor for nested blocks.
         private string? ExecuteLines(List<(int LineNumber, string Content)> lines)
         {
             int i = 0;
@@ -52,14 +49,14 @@ namespace LexorInterpreter.ProgramCodes
 
                 if (content.StartsWith("IF ("))
                 {
-                    // Parse the entire IF/ELSE IF/ELSE chain starting here
+                    // Parse the entire IF/ELSE IF/ELSE chain starting here.
                     var (block, parseErr) = IfBlockParser.Parse(lines, i);
                     if (parseErr != null) return $"Line {lineNum}: {parseErr}";
 
                     string? execErr = IfExecutor.Execute(block!, _symbolTable, ExecuteLines);
                     if (execErr != null) return execErr;
 
-                    // Jump past all lines consumed by the block
+                    // Jump past all lines consumed by the block.
                     i = block!.EndIndex + 1;
                 }
                 else

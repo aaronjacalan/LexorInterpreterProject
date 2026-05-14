@@ -7,11 +7,7 @@ namespace LexorInterpreter.ProgramCodes
 {
     public static class IfExecutor
     {
-        /// <summary>
-        /// Evaluates and executes an <see cref="IfBlock"/>.
-        /// <paramref name="executeLines"/> is a delegate back into the interpreter
-        /// so nested IF statements inside a branch body are handled recursively.
-        /// </summary>
+        // Evaluates and executes an IfBlock using the interpreter callback for nested IFs.
         public static string? Execute(
             IfBlock block,
             Dictionary<string, Variable> symbolTable,
@@ -19,11 +15,11 @@ namespace LexorInterpreter.ProgramCodes
         {
             foreach (var branch in block.Branches)
             {
-                // ELSE branch – always runs if we reach it
+                // ELSE branch runs if reached.
                 if (branch.Condition == null)
                     return executeLines(branch.Body);
 
-                // Evaluate the bool condition
+                // Evaluate the bool condition.
                 var (value, type, error) = ExpressionEvaluator.Evaluate(
                     branch.Condition,
                     branch.ConditionLine,
@@ -38,7 +34,7 @@ namespace LexorInterpreter.ProgramCodes
                     return executeLines(branch.Body);
             }
 
-            // No branch matched and there is no ELSE — that is valid; do nothing.
+            // No branch matched and there is no ELSE; do nothing.
             return null;
         }
     }

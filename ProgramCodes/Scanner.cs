@@ -58,7 +58,7 @@ namespace LexorInterpreter.ProgramCodes
                 .ToList();
         }
 
-        // Splits user input values on commas. Quotes are allowed for BOOL ("TRUE"/"FALSE").
+        // Splits user input values on commas and supports quoted BOOL values.
         private static List<string> SplitInputValues(string input)
         {
             var parts = new List<string>();

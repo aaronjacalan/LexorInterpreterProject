@@ -16,7 +16,7 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            // Remove "DECLARE " prefix and read the type token
+            // Remove "DECLARE " prefix and read the type token.
             string rest = line["DECLARE".Length..].Trim();
             int spaceIdx = rest.IndexOf(' ');
             if (spaceIdx < 0)
@@ -48,15 +48,15 @@ namespace LexorInterpreter.ProgramCodes
                     initValue = DefaultValue(dataType);
                 }
 
-                // Validate the variable name
+                // Validate the variable name.
                 if (!ValidName.IsMatch(varName))
                     return $"Line {lineNumber}: Invalid variable name '{varName}'.";
 
-                // Validate the variable name is not a reserved word
+                // Validate the variable name is not a reserved word.
                 if (Lexer.IsReservedWord(varName))
                     return $"Line {lineNumber}: '{varName}' is a reserved word and cannot be a variable name.";
 
-                // Validate the variable name is not already declared
+                // Validate the variable name is not already declared.
                 if (symbolTable.ContainsKey(varName))
                     return $"Line {lineNumber}: Variable '{varName}' is already declared.";
 
@@ -66,7 +66,7 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Splits "x, y=5, z" on commas while respecting quoted literals
+        // Splits "x, y=5, z" on commas while respecting quoted literals.
         private static List<string> SplitDeclarations(string input)
         {
             var  parts = new List<string>();

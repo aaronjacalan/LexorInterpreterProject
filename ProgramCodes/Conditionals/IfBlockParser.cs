@@ -4,9 +4,7 @@
 
 namespace LexorInterpreter.ProgramCodes
 {
-    // One branch of an if-else chain:
-    //   Condition == null  →  this is the ELSE branch
-    //   Condition != null  →  this is an IF or ELSE IF branch
+    // One branch of an if-else chain: Condition == null means ELSE, otherwise IF/ELSE IF.
     public sealed class IfBranch
     {
         public string? Condition { get; init; }     // raw bool-expression text (null = ELSE)
@@ -24,12 +22,7 @@ namespace LexorInterpreter.ProgramCodes
 
     public static class IfBlockParser
     {
-        /// <summary>
-        /// Parses an IF block starting at <paramref name="startIndex"/> (which must point
-        /// to the "IF (...)" line).  Returns a filled <see cref="IfBlock"/> and sets
-        /// <paramref name="endIndex"/> to the index of the matching END IF line.
-        /// Returns a non-null error string on failure.
-        /// </summary>
+        // Parses an IF block at startIndex, returning the filled block and endIndex or an error.
         public static (IfBlock? block, string? error) Parse(
             List<(int LineNumber, string Content)> lines,
             int startIndex)
@@ -37,27 +30,27 @@ namespace LexorInterpreter.ProgramCodes
             var block = new IfBlock();
             int i = startIndex;
 
-            // Parse the leading IF (<condition>)
+            // Parse the leading IF (<condition>).
             var (firstBranch, err) = ParseIfHeader(lines[i]);
             if (err != null) return (null, err);
             i++;
 
-            // Expect START IF
+            // Expect START IF.
             if (i >= lines.Count || lines[i].Content != "START IF")
                 return (null, $"Line {lines[i > 0 ? i - 1 : 0].LineNumber}: Expected 'START IF' after IF condition.");
             i++;
 
-            // Collect body until the matching END IF (depth-aware)
+            // Collect body until the matching END IF (depth-aware).
             var (body, afterBody, bodyErr) = CollectBody(lines, i);
             if (bodyErr != null) return (null, bodyErr);
             firstBranch!.Body.AddRange(body);
             block.Branches.Add(firstBranch);
             i = afterBody; // points to END IF
 
-            // i now points to END IF; skip it
+            // i now points to END IF; skip it.
             i++;
 
-            // Parse optional ELSE IF / ELSE chains
+            // Parse optional ELSE IF / ELSE chains.
             while (i < lines.Count)
             {
                 string content = lines[i].Content;
@@ -110,19 +103,19 @@ namespace LexorInterpreter.ProgramCodes
             return (block, null);
         }
 
-        // ── helpers ──────────────────────────────────────────────────────────
+        // Helpers.
 
         private static (IfBranch? branch, string? error) ParseIfHeader(
             (int LineNumber, string Content) line)
         {
             string content = line.Content;
-            // Expected: IF (<expr>)
+            // Expected: IF (<expr>).
             if (!content.StartsWith("IF (") || !content.EndsWith(")"))
                 return (null, $"Line {line.LineNumber}: Malformed IF condition. Expected: IF (<expr>)");
 
-            // content = "IF (expr)" — take everything after "IF " to get "(expr)"
+            // content = "IF (expr)" — take everything after "IF " to get "(expr)".
             string condition = content["IF ".Length..].Trim();
-            // Remove the mandatory surrounding parens
+            // Remove the mandatory surrounding parens.
             if (condition.StartsWith("(") && condition.EndsWith(")"))
                 condition = condition[1..^1].Trim();
 
@@ -143,11 +136,7 @@ namespace LexorInterpreter.ProgramCodes
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
         }
 
-        /// <summary>
-        /// Collects body lines starting at <paramref name="i"/> until the matching END IF,
-        /// respecting nested START IF / END IF pairs.
-        /// Returns (bodyLines, indexOfEndIF, error).
-        /// </summary>
+        // Collects body lines until matching END IF, respecting nesting.
         private static (List<(int, string)> body, int endIdx, string? error) CollectBody(
             List<(int LineNumber, string Content)> lines,
             int i)
@@ -167,7 +156,7 @@ namespace LexorInterpreter.ProgramCodes
                 else if (content == "END IF")
                 {
                     if (depth == 0)
-                        return (body, i, null); // found our END IF
+                        return (body, i, null); // Found our END IF.
                     depth--;
                     body.Add(lines[i]);
                 }

@@ -12,7 +12,7 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            // Split "x = y = 4" into ["x", "y", "4"]
+            // Split "x = y = 4" into ["x", "y", "4"].
             var parts = SplitOnAssignment(line);
             if (parts.Count < 2)
                 return $"Line {lineNumber}: Invalid assignment statement.";
@@ -20,7 +20,7 @@ namespace LexorInterpreter.ProgramCodes
             string rawValue  = parts[^1].Trim();
             var    targets   = parts[..^1];
 
-            // Use the first target's type to parse the value
+            // Use the first target's type to parse the value.
             string firstName = targets[0].Trim();
             if (!symbolTable.TryGetValue(firstName, out Variable? anchor))
                 return $"Line {lineNumber}: Undefined variable '{firstName}'.";
@@ -40,7 +40,7 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Splits on bare '=' at top level (paren depth 0), ignoring '==', '<=', '>=', '<>'
+        // Splits on bare '=' at top level, ignoring comparisons.
         private static List<string> SplitOnAssignment(string line)
         {
             var  parts = new List<string>();
@@ -76,7 +76,7 @@ namespace LexorInterpreter.ProgramCodes
         {
             string trimmed = raw.Trim();
 
-            // Reference to another variable
+            // Reference to another variable.
             if (symbolTable.TryGetValue(trimmed, out Variable? refVar))
             {
                 if (refVar.DataType != expectedType)
@@ -84,8 +84,7 @@ namespace LexorInterpreter.ProgramCodes
                 return (refVar.Value, null);
             }
 
-            // Try expression evaluation (supports unary, arithmetic, comparisons, AND/OR/NOT).
-            // If the RHS is a simple literal, the evaluator will still accept it.
+            // Try expression evaluation; simple literals still work.
             var (value, actualType, exprErr) = ExpressionEvaluator.Evaluate(trimmed, lineNumber, symbolTable);
             if (exprErr != null) return (null, exprErr);
 

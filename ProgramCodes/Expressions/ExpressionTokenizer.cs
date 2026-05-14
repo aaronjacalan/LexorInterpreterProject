@@ -5,27 +5,6 @@ using System.Globalization;
 
 namespace LexorInterpreter.ProgramCodes
 {
-    internal enum TokenKind
-    {
-        // special
-        EOF,
-
-        // identifiers + literals
-        IDENT, INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, BOOL_LITERAL,
-
-        // grouping
-        LPAREN, RPAREN,
-
-        // arithmetic
-        PLUS, MINUS, STAR, SLASH, PERCENT,
-
-        // comparisons
-        GT, LT, GTE, LTE, EQEQ, NEQ,
-
-        // gates
-        AND, OR, NOT
-    }
-
     internal sealed record Token(TokenKind Kind, string Lexeme);
 
     internal sealed class Tokenizer

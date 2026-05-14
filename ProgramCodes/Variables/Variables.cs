@@ -1,10 +1,5 @@
 namespace LexorInterpreter.ProgramCodes
 {
-    public enum DataType
-    {
-        INT, CHAR, BOOL, FLOAT
-    }
-
     public class Variable
     {
         public string Name { get; set; }
@@ -18,8 +13,7 @@ namespace LexorInterpreter.ProgramCodes
             Value = value;
         }
 
-        // Returns the printable representation of this variable's value.
-        // BOOL values always display as uppercase TRUE / FALSE per spec.
+        // Returns the printable representation of this variable's value; BOOL is uppercase.
         public string GetDisplayValue()
         {
             if (Value == null) return "";

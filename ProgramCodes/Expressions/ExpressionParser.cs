@@ -68,7 +68,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (op is not (TokenKind.GT or TokenKind.LT or TokenKind.GTE or TokenKind.LTE or TokenKind.EQEQ or TokenKind.NEQ))
                     break;
 
-                Advance(); // consume operator
+                Advance(); // Consume operator.
                 var right = ParseAddSub();
                 if (right.error != null) return right;
 

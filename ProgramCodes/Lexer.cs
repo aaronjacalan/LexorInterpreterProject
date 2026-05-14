@@ -7,19 +7,9 @@ namespace LexorInterpreter.ProgramCodes
 {
     public static class Lexer
     {
-        // Every reserved word in the LEXOR language
-        public static readonly HashSet<string> ReservedWords = new()
-        {
-            "SCRIPT", "AREA", "START", "END", "DECLARE",
-            "PRINT", "SCAN", "INT", "CHAR", "BOOL", "FLOAT",
-            "TRUE", "FALSE", "AND", "OR", "NOT",
-            "IF", "ELSE", "FOR", "REPEAT", "WHEN"
-
-        };
-
         // Returns true when the given identifier is a reserved word.
         public static bool IsReservedWord(string word)
-            => ReservedWords.Contains(word);
+            => LanguageDefinitions.ReservedWords.Contains(word);
 
         // Strips everything from %% onward on a single line.
         public static string StripComment(string line)
@@ -28,9 +18,7 @@ namespace LexorInterpreter.ProgramCodes
             return idx >= 0 ? line[..idx] : line;
         }
 
-        // Tokenizes the full source into a list of
-        // (1-based line number, cleaned content) pairs,
-        // skipping blank lines and pure comment lines.
+        // Tokenizes the source into (lineNumber, cleanedLine) pairs, skipping blanks/comments.
         public static List<(int LineNumber, string Content)> Tokenize(string source)
         {
             var result = new List<(int, string)>();
