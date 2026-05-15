@@ -45,12 +45,24 @@ namespace LexorInterpreter.ProgramCodes
                 }
                 else
                 {
-                    return $"Line {lineNumber}: Undefined variable or invalid token '{t}' in PRINT.";
+                    var evaluated = ExpressionEvaluator.Evaluate(t, lineNumber, symbolTable);
+                    if (evaluated.error != null) return evaluated.error;
+                    output.Append(FormatValue(evaluated.value, evaluated.type));
                 }
             }
 
             Console.Write(output.ToString());
             return null;
+        }
+
+        private static string FormatValue(object? value, DataType type)
+        {
+            if (value == null) return "";
+            return type switch
+            {
+                DataType.BOOL => (bool)value ? "TRUE" : "FALSE",
+                _ => value.ToString()!
+            };
         }
 
         // Splits on '&' while respecting quoted strings.

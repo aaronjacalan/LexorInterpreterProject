@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LexorInterpreterProject")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af56e4e04496a8aa92d1e6f01316c94a370a95cf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc3b7d7d8e5bc18cb64c66605efc36eb1a48ffb5")]
 [assembly: System.Reflection.AssemblyProductAttribute("LexorInterpreterProject")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LexorInterpreterProject")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
