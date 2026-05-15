@@ -88,10 +88,8 @@ namespace LexorInterpreter.ProgramCodes
             var (value, actualType, exprErr) = ExpressionEvaluator.Evaluate(trimmed, lineNumber, symbolTable);
             if (exprErr != null) return (null, exprErr);
 
-            // Enforce strong typing with one practical widening: INT -> FLOAT.
+            // Enforce strong typing (no implicit widening).
             if (expectedType == actualType) return (value, null);
-            if (expectedType == DataType.FLOAT && actualType == DataType.INT)
-                return ((float)(int)value!, null);
 
             return (null, $"Line {lineNumber}: Type mismatch — cannot assign {actualType} to {expectedType}.");
         }

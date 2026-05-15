@@ -97,6 +97,8 @@ namespace LexorInterpreter.ProgramCodes
             switch (type)
             {
                 case DataType.INT:
+                    if (raw.Contains('.'))
+                        return $"Line {lineNum}: INT literals must not include a decimal point.";
                     if (int.TryParse(raw, out int iv)) { value = iv; return null; }
                     if (long.TryParse(raw, out _))
                         return $"Line {lineNum}: INT literal out of range.";
