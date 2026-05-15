@@ -110,16 +110,20 @@ namespace LexorInterpreter.ProgramCodes
 
                 case DataType.BOOL:
                     string trimmed = raw.Trim();
-                    if (trimmed.Length < 2 || trimmed[0] != '"' || trimmed[^1] != '"')
-                        return trimmed is "TRUE" or "FALSE" or "true" or "false"
-                            ? (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\")")
-                            : (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
-                    string b = trimmed[1..^1];
-                    if (b != "TRUE" && b != "FALSE")
+                    if (trimmed.Length >= 2 && trimmed[0] == '"' && trimmed[^1] == '"')
+                    {
+                        string b = trimmed[1..^1];
+                        if (b == "TRUE") return (true, null);
+                        if (b == "FALSE") return (false, null);
                         return b is "true" or "false"
-                            ? (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes")
-                            : (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
-                    return (b == "TRUE", null);
+                            ? (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE (quotes optional)")
+                            : (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use TRUE/FALSE)");
+                    }
+                    if (trimmed == "TRUE") return (true, null);
+                    if (trimmed == "FALSE") return (false, null);
+                    if (trimmed is "true" or "false")
+                        return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE (quotes optional)");
+                    return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use TRUE/FALSE)");
 
                 default:
                     return (null, $"Line {lineNumber}: Unsupported type for SCAN");
