@@ -1,5 +1,4 @@
 // Shared evaluation helpers for LEXOR expressions.
-// Separated from the parser to keep files small and focused.
 
 namespace LexorInterpreter.ProgramCodes
 {

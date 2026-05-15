@@ -87,48 +87,40 @@ namespace LexorInterpreter.ProgramCodes
             switch (type)
             {
                 case DataType.INT:
-                    if (raw.Contains('.'))
-                        return (null, $"Line {lineNumber}: INTEGER {raw} must not include a decimal point");
-                    if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iv))
-                        return (iv, null);
-                    if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
-                        return (null, $"Line {lineNumber}: INT literal out of range for SCAN");
-                    return (null, $"Line {lineNumber}: '{raw}' is not a valid INT for SCAN");
+                    if (raw.Contains('.')) return (null, $"Line {lineNumber}: INTEGER {raw} must not include a decimal point");
+                    if (!int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iv))
+                        return long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
+                            ? (null, $"Line {lineNumber}: INT out of range for SCAN")
+                            : (null, $"Line {lineNumber}: '{raw}' is not a valid INT for SCAN");
+                    return (iv, null);
 
                 case DataType.FLOAT:
-                    if (!raw.Contains('.'))
-                        return (null, $"Line {lineNumber}: 'FLOAT {raw}' must include a decimal point");
-                    if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float fv))
-                    {
-                        if (float.IsInfinity(fv) || float.IsNaN(fv))
-                            return (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN");
-                        if (fv == 0f && raw.StartsWith("-", StringComparison.Ordinal))
-                            return (null, $"Line {lineNumber}: -0.0 is not allowed for SCAN");
-                        return (fv, null);
-                    }
-                    if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
-                        return (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN");
-                    return (null, $"Line {lineNumber}: '{raw}' is not a valid FLOAT for SCAN");
+                    if (!raw.Contains('.')) return (null, $"Line {lineNumber}: 'FLOAT {raw}' must include a decimal point");
+                    if (!float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float fv))
+                        return double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _)
+                            ? (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN")
+                            : (null, $"Line {lineNumber}: '{raw}' is not a valid FLOAT for SCAN");
+                    if (float.IsInfinity(fv) || float.IsNaN(fv)) return (null, $"Line {lineNumber}: FLOAT out of range for SCAN");
+                    if (fv == 0f && raw.StartsWith("-", StringComparison.Ordinal)) return (null, $"Line {lineNumber}: -0.0 is not allowed for SCAN");
+                    return (fv, null);
 
                 case DataType.CHAR:
-                    if (raw.Length == 1) return (raw[0], null);
-                    if (raw.Length == 3 && raw[0] == '\'' && raw[2] == '\'') return (raw[1], null);
-                    return (null, $"Line {lineNumber}: '{raw}' is not a valid CHAR for SCAN (only single characters)");
+                    if (raw.Length != 1 && !(raw.Length == 3 && raw[0] == '\'' && raw[2] == '\''))
+                        return (null, $"Line {lineNumber}: '{raw}' is not a valid CHAR for SCAN (only single characters)");
+                    return (raw.Length == 1) ? (raw[0], null) : (raw[1], null);
 
                 case DataType.BOOL:
                     string trimmed = raw.Trim();
-                    if (trimmed.Length >= 2 && trimmed[0] == '"' && trimmed[^1] == '"')
-                    {
-                        string b = trimmed[1..^1];
-                        if (b == "TRUE") return (true, null);
-                        if (b == "FALSE") return (false, null);
-                        if (b is "true" or "false")
-                            return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes");
-                        return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
-                    }
-                    if (trimmed is "TRUE" or "FALSE" or "true" or "false")
-                        return (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\")");
-                    return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
+                    if (trimmed.Length < 2 || trimmed[0] != '"' || trimmed[^1] != '"')
+                        return trimmed is "TRUE" or "FALSE" or "true" or "false"
+                            ? (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\")")
+                            : (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
+                    string b = trimmed[1..^1];
+                    if (b != "TRUE" && b != "FALSE")
+                        return b is "true" or "false"
+                            ? (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes")
+                            : (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use \"TRUE\"/\"FALSE\")");
+                    return (b == "TRUE", null);
 
                 default:
                     return (null, $"Line {lineNumber}: Unsupported type for SCAN");
