@@ -81,6 +81,9 @@ namespace LexorInterpreter.ProgramCodes
             {
                 float a = AsFloat(left);
                 float b = AsFloat(right);
+                if ((op == TokenKind.SLASH || op == TokenKind.PERCENT) && b == 0f)
+                    return (null, DataType.FLOAT, $"Line {lineNumber}: Division by zero.");
+
                 float res = op switch
                 {
                     TokenKind.PLUS => a + b,
@@ -90,21 +93,35 @@ namespace LexorInterpreter.ProgramCodes
                     TokenKind.PERCENT => a % b,
                     _ => 0f
                 };
+
+                if (float.IsInfinity(res) || float.IsNaN(res))
+                    return (null, DataType.FLOAT, $"Line {lineNumber}: FLOAT overflow or invalid value.");
+
                 return (res, DataType.FLOAT, null);
             }
 
             int ai = (int)left.value!;
             int bi = (int)right.value!;
-            int ires = op switch
+            if ((op == TokenKind.SLASH || op == TokenKind.PERCENT) && bi == 0)
+                return (null, DataType.INT, $"Line {lineNumber}: Division by zero.");
+
+            try
             {
-                TokenKind.PLUS => ai + bi,
-                TokenKind.MINUS => ai - bi,
-                TokenKind.STAR => ai * bi,
-                TokenKind.SLASH => ai / bi,
-                TokenKind.PERCENT => ai % bi,
-                _ => 0
-            };
-            return (ires, DataType.INT, null);
+                int ires = op switch
+                {
+                    TokenKind.PLUS => checked(ai + bi),
+                    TokenKind.MINUS => checked(ai - bi),
+                    TokenKind.STAR => checked(ai * bi),
+                    TokenKind.SLASH => ai / bi,
+                    TokenKind.PERCENT => ai % bi,
+                    _ => 0
+                };
+                return (ires, DataType.INT, null);
+            }
+            catch (OverflowException)
+            {
+                return (null, DataType.INT, $"Line {lineNumber}: INT overflow.");
+            }
         }
 
         internal static bool IsNumeric(DataType t) => t == DataType.INT || t == DataType.FLOAT;

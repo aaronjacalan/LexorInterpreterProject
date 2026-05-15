@@ -1,19 +1,25 @@
 SCRIPT AREA
 START SCRIPT
-    DECLARE INT a=0, b=0, c=0, d=0, e=0
-    DECLARE FLOAT x=0.0, y=0.0, z=0.0
-    DECLARE BOOL p="FALSE", q="TRUE", r="FALSE"
-    DECLARE CHAR ch='a'
+    DECLARE INT a=0, b=0, c=0, d=0, e=0, f=0, g=0
+    DECLARE INT tmp1=1, tmp2=2, tmp3=3, tmp4=4
+    DECLARE FLOAT x=0.0, y=0.0, z=0.0, w=0.0
+    DECLARE FLOAT tiny=0.0000001, tiny2=0.00000012, huge=34028235.0
+    DECLARE FLOAT frac=3.14159, frac2=2.71828, negTiny=-0.0000001
+    DECLARE BOOL p="FALSE", q="TRUE", r="FALSE", s="TRUE", t="FALSE"
+    DECLARE CHAR ch='a', ch2='Z', ch3='0'
 
-    SCAN: a, b, x, y, p, q, ch
+    SCAN: a, b, x, y, p, q, ch, ch2
 
     c = a + b * 3 - (a % 2) + (-b)
     d = (a + b) * (a - b) + (a / 2) - (b / 3)
     e = (a % 5) * (b % 7) + (a * b) - (a - b)
+    f = (tmp1 + tmp2) - (tmp3 - tmp4)
+    g = (tmp1 + tmp2) * (tmp3 - tmp4) + (a - b)
 
     x = x + y * 1.5 - (x / 2.0) + (-y)
     y = (x + y) / 3.0 + (x - y) * 0.25 + (x % 2.0)
     z = (x * y) - (x / y) + (x + y) * (x - y)
+    w = (frac + frac2) * (tiny + tiny2) - (negTiny)
 
     p = NOT p
     q = NOT (p AND q) OR (p AND NOT q)
@@ -22,18 +28,79 @@ START SCRIPT
     p = (a > b) OR (a < b) OR (a == b) OR (a <> b)
     q = (x >= y) AND (x <= y) OR (x == y) OR (x <> y)
     r = r AND ("TRUE" OR "FALSE") AND NOT "FALSE"
+    s = (p AND q) OR (r AND (p OR q))
+    t = NOT (s AND (p OR NOT q))
 
     a = +a + -b + +(a - b) + -(a * 2)
     b = (a + b) * (a + -b) - (-a) + (+b)
     c = (a + b + c) * (a - b - c) + (a * b * c) - (a / (b + 1))
     d = (a + b) % (c + 1) + (d % 3) - (e % 4)
+    e = (tmp1 + tmp2) + (tmp3 - tmp4)
 
     x = (x + 1.25) * (y - 2.5) + (-x) + (+y)
     y = (x / 2.0) + (y / 3.0) - (z / 4.0) + (x % 1.5)
     z = (x + y + z) * (x - y - z)
+    w = (w + z) * (x - y) + (x / (y + 1.0))
+    x = (((x + 1.0) * (y - 2.0)) + (z / (y + 3.0)) - (w % 1.25)) * (frac - frac2)
+    y = ((x * x) - (y * y) + (z * z)) / (x + y + 5.0) + (w / (z + 2.0))
+    z = ((x + y) * (x - y) + (w - z)) / (frac + 1.0)
+    w = (x + y + z + w) * (x - y + z - w)
 
-    PRINT: "INTS: " & a & ", " & b & ", " & c & ", " & d & ", " & $
-    PRINT: "FLOATS: " & x & ", " & y & ", " & z & $ 
-    PRINT: "BOOLS: " & p & ", " & q & ", " & r & $
-    PRINT: "CHAR: " & ch
+    IF (a > b)
+    START IF
+        IF (x > y)
+        START IF
+            IF (p AND q)
+            START IF
+                PRINT: "NESTED IF: a>b, x>y, p&q" & $
+            END IF
+            ELSE
+            START IF
+                PRINT: "NESTED IF: a>b, x>y, not p&q" & $
+            END IF
+        END IF
+        ELSE
+        START IF
+            IF (r OR s)
+            START IF
+                PRINT: "NESTED IF: a>b, x<=y, r|s" & $
+            END IF
+        END IF
+    END IF
+    ELSE
+    START IF
+        IF (p AND NOT q)
+        START IF
+            IF (t OR r)
+            START IF
+                PRINT: "NESTED ELSE: p true, q false" & $
+            END IF
+        END IF
+    END IF
+
+    IF (a > b)
+    START IF
+        IF (x > y)
+        START IF
+            PRINT: "NESTED IF: a>b and x>y" & $
+        END IF
+    END IF
+    ELSE
+    START IF
+        IF (p AND NOT q)
+        START IF
+            PRINT: "NESTED ELSE: p true, q false" & $
+        END IF
+    END IF
+
+    PRINT: "INTS: " & a & ", " & b & ", " & c & ", " & d & ", " & e & ", " & f & ", " & g & $
+    PRINT: "FLOATS: " & x & ", " & y & ", " & z & ", " & w & $
+    PRINT: "BOOLS: " & p & ", " & q & ", " & r & ", " & s & ", " & t & $
+    PRINT: "CHARS: " & ch & ", " & ch2 & ", " & ch3 & $
+
+    PRINT: "BRACKETS: " & [[] & []] & " " & [#] & " " & [@] & " " & [$] & $
+    PRINT: "BRACKETS-MIX: " & [ ] & " " & [\]] & " " & [[] & "-" & []] & $
+    PRINT: "BRACKETS-EDGE: " & [\[] & " " & []] & " " & [[] & $
+    PRINT: "BRACKETS-NEST: " & [[[]]] & " " & [[#]] & " " & [[[]]] & " " & [[][]] & $
+
 END SCRIPT

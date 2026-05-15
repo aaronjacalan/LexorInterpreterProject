@@ -98,13 +98,28 @@ namespace LexorInterpreter.ProgramCodes
             {
                 case DataType.INT:
                     if (int.TryParse(raw, out int iv)) { value = iv; return null; }
+                    if (long.TryParse(raw, out _))
+                        return $"Line {lineNum}: INT literal out of range.";
                     return $"Line {lineNum}: '{raw}' is not a valid INT.";
 
                 case DataType.FLOAT:
                     if (float.TryParse(raw,
                         System.Globalization.NumberStyles.Float,
                         System.Globalization.CultureInfo.InvariantCulture,
-                        out float fv)) { value = fv; return null; }
+                        out float fv))
+                    {
+                        if (float.IsInfinity(fv) || float.IsNaN(fv))
+                            return $"Line {lineNum}: FLOAT literal out of range.";
+                        if (fv == 0f && raw.StartsWith("-", StringComparison.Ordinal))
+                            return $"Line {lineNum}: -0.0 is not allowed.";
+                        value = fv;
+                        return null;
+                    }
+                    if (double.TryParse(raw,
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out _))
+                        return $"Line {lineNum}: FLOAT literal out of range.";
                     return $"Line {lineNum}: '{raw}' is not a valid FLOAT.";
 
                 case DataType.CHAR:

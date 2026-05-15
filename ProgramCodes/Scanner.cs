@@ -89,11 +89,21 @@ namespace LexorInterpreter.ProgramCodes
                 case DataType.INT:
                     if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iv))
                         return (iv, null);
+                    if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                        return (null, $"Line {lineNumber}: INT literal out of range for SCAN.");
                     return (null, $"Line {lineNumber}: '{raw}' is not a valid INT for SCAN.");
 
                 case DataType.FLOAT:
                     if (float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float fv))
+                    {
+                        if (float.IsInfinity(fv) || float.IsNaN(fv))
+                            return (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN.");
+                        if (fv == 0f && raw.StartsWith("-", StringComparison.Ordinal))
+                            return (null, $"Line {lineNumber}: -0.0 is not allowed for SCAN.");
                         return (fv, null);
+                    }
+                    if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                        return (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN.");
                     return (null, $"Line {lineNumber}: '{raw}' is not a valid FLOAT for SCAN.");
 
                 case DataType.CHAR:

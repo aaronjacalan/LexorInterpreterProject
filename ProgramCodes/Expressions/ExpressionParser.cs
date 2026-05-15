@@ -171,10 +171,22 @@ namespace LexorInterpreter.ProgramCodes
             }
 
             if (Match(TokenKind.INT_LITERAL, out var intTok))
-                return (int.Parse(intTok!.Lexeme, CultureInfo.InvariantCulture), DataType.INT, null);
+            {
+                if (!int.TryParse(intTok!.Lexeme, NumberStyles.Integer, CultureInfo.InvariantCulture, out int intVal))
+                    return (null, DataType.INT, $"Line {_lineNumber}: INT literal out of range.");
+                return (intVal, DataType.INT, null);
+            }
 
             if (Match(TokenKind.FLOAT_LITERAL, out var floatTok))
-                return (float.Parse(floatTok!.Lexeme, CultureInfo.InvariantCulture), DataType.FLOAT, null);
+            {
+                if (!float.TryParse(floatTok!.Lexeme, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatVal))
+                    return (null, DataType.FLOAT, $"Line {_lineNumber}: FLOAT literal out of range.");
+                if (float.IsInfinity(floatVal) || float.IsNaN(floatVal))
+                    return (null, DataType.FLOAT, $"Line {_lineNumber}: FLOAT literal out of range.");
+                if (floatVal == 0f && floatTok.Lexeme.StartsWith("-", StringComparison.Ordinal))
+                    return (null, DataType.FLOAT, $"Line {_lineNumber}: -0.0 is not allowed.");
+                return (floatVal, DataType.FLOAT, null);
+            }
 
             if (Match(TokenKind.CHAR_LITERAL, out var charTok))
                 return (charTok!.Lexeme[0], DataType.CHAR, null);
