@@ -4,7 +4,7 @@ START SCRIPT
     DECLARE INT tmp1=1, tmp2=2, tmp3=3, tmp4=4
     DECLARE FLOAT x=0.0, y=0.0, z=0.0, w=0.0
     DECLARE FLOAT tiny=0.0000001, tiny2=0.00000012, huge=34028235.0
-    DECLARE FLOAT frac=3.14159, frac2=2.71828, negTiny=-0.0000001
+    DECLARE FLOAT frac=3.14159, frac2=2.71828, negTiny=-0.0000001, test = 4.0
     DECLARE BOOL p="FALSE", q="TRUE", r="FALSE", s="TRUE", t="FALSE"
     DECLARE CHAR ch='a', ch2='Z', ch3='0'
 
