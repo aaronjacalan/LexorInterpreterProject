@@ -1,13 +1,16 @@
 // Interprets a LEXOR source program.
 // - Validates SCRIPT AREA / START SCRIPT / END SCRIPT structure
 // - Runs all `DECLARE` lines first to build the symbol table
-// - Executes the remaining statements line by line (PRINT, assignments, etc.)
+// - Executes the remaining statements line by line
+//   (PRINT, SCAN, assignments, IF blocks, FOR loops, REPEAT loops)
 
 namespace LexorInterpreter.ProgramCodes
 {
     public class Interpreter
     {
         private readonly Dictionary<string, Variable> _symbolTable = new();
+        private int _nestingDepth;
+        private const int MaxNestingDepth = 50;
 
         // Returns null on success; otherwise returns a formatted error message.
         public string? Run(string source)
@@ -39,7 +42,10 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Executes a list of lines, handling IF blocks and plain statements.
+        // -----------------------------------------------------------------------
+        // Core execution loop — handles IF blocks, FOR loops, REPEAT loops,
+        // and plain statements. Called recursively for nested control structures.
+        // -----------------------------------------------------------------------
         private string? ExecuteLines(List<(int LineNumber, string Content)> lines)
         {
             int i = 0;
@@ -47,17 +53,53 @@ namespace LexorInterpreter.ProgramCodes
             {
                 var (lineNum, content) = lines[i];
 
+                // ---- IF / ELSE IF / ELSE chain ----
                 if (content.StartsWith("IF ("))
                 {
-                    // Parse the entire IF/ELSE IF/ELSE chain starting here.
                     var (block, parseErr) = IfBlockParser.Parse(lines, i);
                     if (parseErr != null) return $"Line {lineNum}: {parseErr}";
+
+                    _nestingDepth++;
+                    if (_nestingDepth > MaxNestingDepth)
+                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
 
                     string? execErr = IfExecutor.Execute(block!, _symbolTable, ExecuteLines);
                     if (execErr != null) return execErr;
 
-                    // Jump past all lines consumed by the block.
+                    _nestingDepth--;
                     i = block!.EndIndex + 1;
+                }
+                // ---- FOR loop ----
+                else if (content.StartsWith("FOR ("))
+                {
+                    var (loop, parseErr) = LoopBlockParser.Parse(lines, i);
+                    if (parseErr != null) return parseErr;
+
+                    _nestingDepth++;
+                    if (_nestingDepth > MaxNestingDepth)
+                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
+
+                    string? execErr = LoopExecutor.Execute(loop!, _symbolTable, ExecuteLines, ExecuteStatement);
+                    if (execErr != null) return execErr;
+
+                    _nestingDepth--;
+                    i = loop!.EndIndex + 1;
+                }
+                // ---- REPEAT WHEN loop ----
+                else if (content.StartsWith("REPEAT WHEN ("))
+                {
+                    var (loop, parseErr) = LoopBlockParser.Parse(lines, i);
+                    if (parseErr != null) return parseErr;
+
+                    _nestingDepth++;
+                    if (_nestingDepth > MaxNestingDepth)
+                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
+
+                    string? execErr = LoopExecutor.Execute(loop!, _symbolTable, ExecuteLines, ExecuteStatement);
+                    if (execErr != null) return execErr;
+
+                    _nestingDepth--;
+                    i = loop!.EndIndex + 1;
                 }
                 else
                 {
@@ -69,7 +111,7 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Dispatches a single (non-IF) statement line.
+        // Dispatches a single (non-control-flow) statement line.
         private string? ExecuteStatement(string line, int lineNumber)
         {
             if (line.StartsWith("PRINT:"))
@@ -138,13 +180,11 @@ namespace LexorInterpreter.ProgramCodes
                && !line.StartsWith("DECLARE")
                && !line.StartsWith("PRINT");
 
-        // Prints an interpreter error message.
+        // Formats an interpreter error message.
         private static string NormalizeError(string message)
         {
-            // Already formatted.
             if (message.StartsWith("[ERROR - Line", StringComparison.Ordinal)) return message;
 
-            // Convert "Line N: msg" into the required format.
             const string prefix = "Line ";
             if (message.StartsWith(prefix, StringComparison.Ordinal))
             {
@@ -160,7 +200,6 @@ namespace LexorInterpreter.ProgramCodes
                 }
             }
 
-            // Fallback when no line number is present.
             string cleaned = message;
             if (cleaned.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                 cleaned = cleaned["Error:".Length..].Trim();

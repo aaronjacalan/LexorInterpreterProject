@@ -44,6 +44,7 @@ namespace LexorInterpreter.ProgramCodes
                 var (parsed, err) = ParseToType(rawVal, variable.DataType, lineNumber);
                 if (err != null) return err;
                 variable.Value = parsed;
+                variable.IsInitialized = true;
             }
 
             return null;

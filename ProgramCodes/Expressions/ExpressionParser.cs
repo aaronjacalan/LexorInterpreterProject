@@ -203,6 +203,8 @@ namespace LexorInterpreter.ProgramCodes
                 string name = identTok!.Lexeme;
                 if (!_symbols.TryGetValue(name, out var variable))
                     return (null, DataType.INT, $"Line {_lineNumber}: Undefined variable '{name}'.");
+                if (!variable.IsInitialized)
+                    return (null, DataType.INT, $"Line {_lineNumber}: Variable '{name}' is uninitialized.");
                 return (variable.Value, variable.DataType, null);
             }
 

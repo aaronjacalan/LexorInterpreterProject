@@ -17,7 +17,7 @@ class Program
             Console.ResetColor();
         }
 
-        Console.WriteLine("LEXOR Interpreter:\n");
+        Console.WriteLine("\nLEXOR Interpreter:\n");
 
         if (args.Length == 0)
         {

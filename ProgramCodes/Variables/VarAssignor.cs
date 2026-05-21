@@ -35,6 +35,7 @@ namespace LexorInterpreter.ProgramCodes
                     return $"Line {lineNumber}: Undefined variable '{name}'.";
 
                 variable.Value = resolved;
+                variable.IsInitialized = true;
             }
 
             return null;

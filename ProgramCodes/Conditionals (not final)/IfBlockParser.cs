@@ -51,9 +51,13 @@ namespace LexorInterpreter.ProgramCodes
             i++;
 
             // Parse optional ELSE IF / ELSE chains.
+            bool hasElse = false;
             while (i < lines.Count)
             {
                 string content = lines[i].Content;
+
+                if (hasElse)
+                    return (null, $"Line {lines[i].LineNumber}: Unexpected '{content}' after ELSE — ELSE must be the last branch.");
 
                 if (content.StartsWith("ELSE IF "))
                 {
@@ -91,7 +95,7 @@ namespace LexorInterpreter.ProgramCodes
                     });
                     block.Branches[^1].Body.AddRange(elseBody);
                     i = afterElseBody + 1; // skip END IF
-                    break; // ELSE is always last
+                    hasElse = true; // ELSE must be the last branch
                 }
                 else
                 {
@@ -159,6 +163,10 @@ namespace LexorInterpreter.ProgramCodes
                         return (body, i, null); // Found our END IF.
                     depth--;
                     body.Add(lines[i]);
+                }
+                else if (depth == 0 && (content == "ELSE" || content.StartsWith("ELSE IF ")))
+                {
+                    return (body, i, $"Line {lines[i].LineNumber}: Unexpected '{content}' without a matching IF condition.");
                 }
                 else
                 {

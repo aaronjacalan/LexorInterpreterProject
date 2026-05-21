@@ -34,7 +34,8 @@ namespace LexorInterpreter.ProgramCodes
                 string varName;
                 object? initValue;
 
-                if (trimmed.Contains('='))
+                bool hasInitValue = trimmed.Contains('=');
+                if (hasInitValue)
                 {
                     int eq = trimmed.IndexOf('=');
                     varName = trimmed[..eq].Trim();
@@ -60,7 +61,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (symbolTable.ContainsKey(varName))
                     return $"Line {lineNumber}: Variable '{varName}' is already declared.";
 
-                symbolTable[varName] = new Variable(varName, dataType, initValue);
+                symbolTable[varName] = new Variable(varName, dataType, initValue, hasInitValue);
             }
 
             return null;

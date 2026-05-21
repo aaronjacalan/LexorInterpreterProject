@@ -5,12 +5,14 @@ namespace LexorInterpreter.ProgramCodes
         public string Name { get; set; }
         public DataType DataType { get; set; }
         public object? Value { get; set; }
+        public bool IsInitialized { get; set; }
 
-        public Variable(string name, DataType dataType, object? value = null)
+        public Variable(string name, DataType dataType, object? value = null, bool isInitialized = false)
         {
             Name = name;
             DataType = dataType;
             Value = value;
+            IsInitialized = isInitialized;
         }
 
         // Returns the printable representation of this variable's value; BOOL is uppercase.
