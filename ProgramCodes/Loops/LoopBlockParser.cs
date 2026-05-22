@@ -1,62 +1,30 @@
-// Parses FOR and REPEAT loop constructs out of a flat line list.
-// Both loop types use depth-aware body collection so that nested loops
-// (START FOR…END FOR and START REPEAT…END REPEAT) are handled correctly.
-//
-// FOR syntax:
-//   FOR (<init>, <condition>, <update>)
-//   START FOR
-//     <statements>
-//   END FOR
-//
-// REPEAT syntax:
-//   REPEAT WHEN (<bool expression>)
-//   START REPEAT
-//     <statements>
-//   END REPEAT
+// Parses FOR and REPEAT loop headers and collects their body lines.
+// FOR:   FOR (<init>, <cond>, <update>) … START FOR … END FOR
+// REPEAT: REPEAT WHEN (<expr>) … START REPEAT … END REPEAT
 
 namespace LexorInterpreter.ProgramCodes
 {
-    // -----------------------------------------------------------------------
-    // Data structures
-    // -----------------------------------------------------------------------
-
     public enum LoopKind { For, Repeat }
 
-    /// <summary>A fully parsed loop block ready for execution.</summary>
     public sealed class LoopBlock
     {
         public LoopKind Kind { get; init; }
 
-        // FOR only: the three header parts.
-        public string? InitStatement  { get; init; }   // e.g. "i = 1"
-        public string? Condition      { get; init; }   // e.g. "i <= 5"
-        public string? UpdateStatement{ get; init; }   // e.g. "i = i + 1"
-
-        // REPEAT only: the condition expression.
-        // (FOR condition is also stored here for uniform execution.)
+        // FOR only.
+        public string? InitStatement   { get; init; }
+        public string? Condition       { get; init; }
+        public string? UpdateStatement { get; init; }
 
         public int ConditionLine { get; init; }
 
-        /// <summary>The body lines between START FOR/REPEAT and END FOR/REPEAT.</summary>
         public List<(int LineNumber, string Content)> Body { get; } = new();
 
-        /// <summary>
-        /// Index in the *original* line list of the last line consumed by this
-        /// block (the END FOR or END REPEAT line).
-        /// </summary>
+        // Index of END FOR / END REPEAT in the original line list.
         public int EndIndex { get; set; }
     }
 
-    // -----------------------------------------------------------------------
-    // Parser
-    // -----------------------------------------------------------------------
-
     public static class LoopBlockParser
     {
-        /// <summary>
-        /// Tries to parse a loop block that starts at <paramref name="startIndex"/>.
-        /// Returns the filled block plus the index past the closing keyword, or an error.
-        /// </summary>
         public static (LoopBlock? block, string? error) Parse(
             List<(int LineNumber, string Content)> lines,
             int startIndex)
@@ -72,26 +40,16 @@ namespace LexorInterpreter.ProgramCodes
             return (null, $"Line {lineNum}: Expected FOR or REPEAT WHEN loop header.");
         }
 
-        // -------------------------------------------------------------------
-        // FOR loop parser
-        // -------------------------------------------------------------------
-
         private static (LoopBlock? block, string? error) ParseFor(
             List<(int LineNumber, string Content)> lines,
             int i)
         {
             var (lineNum, content) = lines[i];
 
-            // Extract the header: FOR (<init>, <cond>, <update>)
             if (!content.StartsWith("FOR (") || !content.EndsWith(")"))
                 return (null, $"Line {lineNum}: Malformed FOR header. Expected: FOR (<init>, <cond>, <update>)");
 
-            // Strip "FOR (" prefix and ")" suffix.
             string inner = content["FOR (".Length..^1].Trim();
-
-            // Split on the TWO commas, but be careful: the sub-expressions
-            // may themselves contain parentheses (function calls are not in LEXOR,
-            // but extra parens in conditions are allowed).
             var parts = SplitHeaderParts(inner);
             if (parts == null || parts.Count != 3)
                 return (null, $"Line {lineNum}: FOR header must have exactly three parts separated by ','.");
@@ -105,12 +63,10 @@ namespace LexorInterpreter.ProgramCodes
 
             i++;
 
-            // Expect START FOR.
             if (i >= lines.Count || lines[i].Content != "START FOR")
                 return (null, $"Line {lineNum}: Expected 'START FOR' after FOR header.");
             i++;
 
-            // Collect body until the matching END FOR.
             var (body, endIdx, bodyErr) = CollectBody(lines, i, "START FOR", "END FOR");
             if (bodyErr != null) return (null, bodyErr);
 
@@ -127,17 +83,12 @@ namespace LexorInterpreter.ProgramCodes
             return (block, null);
         }
 
-        // -------------------------------------------------------------------
-        // REPEAT loop parser
-        // -------------------------------------------------------------------
-
         private static (LoopBlock? block, string? error) ParseRepeat(
             List<(int LineNumber, string Content)> lines,
             int i)
         {
             var (lineNum, content) = lines[i];
 
-            // Expected: REPEAT WHEN (<expr>)
             if (!content.StartsWith("REPEAT WHEN (") || !content.EndsWith(")"))
                 return (null, $"Line {lineNum}: Malformed REPEAT header. Expected: REPEAT WHEN (<bool expr>)");
 
@@ -147,12 +98,10 @@ namespace LexorInterpreter.ProgramCodes
 
             i++;
 
-            // Expect START REPEAT.
             if (i >= lines.Count || lines[i].Content != "START REPEAT")
                 return (null, $"Line {lineNum}: Expected 'START REPEAT' after REPEAT WHEN header.");
             i++;
 
-            // Collect body until the matching END REPEAT.
             var (body, endIdx, bodyErr) = CollectBody(lines, i, "START REPEAT", "END REPEAT");
             if (bodyErr != null) return (null, bodyErr);
 
@@ -167,14 +116,7 @@ namespace LexorInterpreter.ProgramCodes
             return (block, null);
         }
 
-        // -------------------------------------------------------------------
-        // Shared helpers
-        // -------------------------------------------------------------------
-
-        /// <summary>
-        /// Collects body lines between the already-consumed opening keyword and
-        /// the matching closing keyword, respecting nested start/end pairs.
-        /// </summary>
+        // Collects lines until matching close keyword, respecting nested pairs.
         private static (List<(int, string)> body, int endIdx, string? error) CollectBody(
             List<(int LineNumber, string Content)> lines,
             int i,
@@ -196,7 +138,7 @@ namespace LexorInterpreter.ProgramCodes
                 else if (c == closeKeyword)
                 {
                     if (depth == 0)
-                        return (body, i, null); // Found our closing keyword.
+                        return (body, i, null);
                     depth--;
                     body.Add(lines[i]);
                 }
@@ -210,11 +152,7 @@ namespace LexorInterpreter.ProgramCodes
             return (body, i, $"Missing '{closeKeyword}'.");
         }
 
-        /// <summary>
-        /// Splits a string on top-level commas (ignoring those inside
-        /// single- or double-quoted strings and parentheses).
-        /// Returns null if parsing detects a runaway string or paren.
-        /// </summary>
+        // Splits on top-level commas, ignoring those inside quotes or parens.
         private static List<string>? SplitHeaderParts(string text)
         {
             var  parts     = new List<string>();
@@ -241,7 +179,7 @@ namespace LexorInterpreter.ProgramCodes
                 }
             }
 
-            if (inSingle || inDouble) return null; // Runaway quote.
+            if (inSingle || inDouble) return null;
             parts.Add(text[start..]);
             return parts;
         }

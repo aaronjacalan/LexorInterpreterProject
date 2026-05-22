@@ -1,13 +1,19 @@
+%% Expected Output:
+%% Final sum = 27
 SCRIPT AREA
 START SCRIPT
-
-DECLARE INT x=1
-
-REPEAT WHEN (x <= 5)
-START REPEAT
-
-    PRINT: x & $
-
-END REPEAT
-
+    DECLARE INT i, j, k, sum = 0
+    FOR (i = 1, i <= 2, i = i + 1)
+    START FOR
+        j = 1
+        REPEAT WHEN (j <= 2)
+        START REPEAT
+            FOR (k = 1, k <= 2, k = k + 1)
+            START FOR
+                sum = sum + (i * j * k)
+            END FOR
+            j = j + 1
+        END REPEAT
+    END FOR
+    PRINT: [Final sum = ] & sum & $
 END SCRIPT
