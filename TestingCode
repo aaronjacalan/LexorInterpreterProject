@@ -1,19 +1,34 @@
-%% Expected Output:
-%% Final sum = 27
 SCRIPT AREA
 START SCRIPT
-    DECLARE INT i, j, k, sum = 0
-    FOR (i = 1, i <= 2, i = i + 1)
-    START FOR
-        j = 1
-        REPEAT WHEN (j <= 2)
-        START REPEAT
-            FOR (k = 1, k <= 2, k = k + 1)
-            START FOR
-                sum = sum + (i * j * k)
-            END FOR
-            j = j + 1
-        END REPEAT
-    END FOR
-    PRINT: [Final sum = ] & sum & $
+DECLARE INT hour, minute, convertedHour 
+SCAN: hour, minute 
+IF (hour<0 OR hour>23 OR minute<0 OR minute>59)  
+START IF
+	PRINT: "Invalid time."
+END IF
+ELSE
+START IF
+	convertedHour = hour
+	IF (hour==0)  
+	START IF 
+		convertedHour = 12
+            	PRINT: convertedHour & [:] & minute & "AM"
+        END IF
+        ELSE IF (hour>0 AND hour<12)  
+	START IF 
+		convertedHour = hour
+            	PRINT: convertedHour & [:] & minute & "AM"
+        END IF
+	ELSE IF (hour==12)  
+	START IF 
+		convertedHour = 12
+            	PRINT: convertedHour & [:] & minute & "PM"
+        END IF
+	ELSE
+	START IF
+		convertedHour = hour - 12
+            	PRINT: convertedHour & [:] & minute & "PM"
+        END IF
+ 
+END IF 
 END SCRIPT

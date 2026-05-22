@@ -6,6 +6,7 @@ namespace LexorInterpreter.ProgramCodes
 {
     public static class LoopExecutor
     {
+        // Safety cap — prevents infinite loops from hanging the interpreter.
         private const int MaxIterations = 100_000;
 
         public static string? Execute(
@@ -27,7 +28,7 @@ namespace LexorInterpreter.ProgramCodes
         {
             int lineNum = block.ConditionLine;
 
-            // Init.
+            // 1. Init.
             if (!string.IsNullOrWhiteSpace(block.InitStatement))
             {
                 string? initErr = executeStatement(block.InitStatement!, lineNum);
@@ -40,7 +41,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (++iterations > MaxIterations)
                     return $"Line {lineNum}: FOR loop exceeded {MaxIterations} iterations. Possible infinite loop.";
 
-                // Condition.
+                // 2. Condition — stop when false.
                 var (condValue, condType, condErr) = ExpressionEvaluator.Evaluate(
                     block.Condition!, lineNum, symbolTable);
 
@@ -52,11 +53,11 @@ namespace LexorInterpreter.ProgramCodes
                 if (!(bool)condValue!)
                     break;
 
-                // Body.
+                // 3. Body.
                 string? bodyErr = executeLines(block.Body);
                 if (bodyErr != null) return bodyErr;
 
-                // Update.
+                // 4. Update.
                 if (!string.IsNullOrWhiteSpace(block.UpdateStatement))
                 {
                     string? updErr = executeStatement(block.UpdateStatement!, lineNum);
@@ -80,7 +81,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (++iterations > MaxIterations)
                     return $"Line {lineNum}: REPEAT loop exceeded {MaxIterations} iterations. Possible infinite loop.";
 
-                // Condition.
+                // 1. Condition — stop when false.
                 var (condValue, condType, condErr) = ExpressionEvaluator.Evaluate(
                     block.Condition!, lineNum, symbolTable);
 
@@ -92,7 +93,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (!(bool)condValue!)
                     break;
 
-                // Body.
+                // 2. Body.
                 string? bodyErr = executeLines(block.Body);
                 if (bodyErr != null) return bodyErr;
             }

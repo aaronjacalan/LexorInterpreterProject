@@ -49,6 +49,7 @@ namespace LexorInterpreter.ProgramCodes
             if (!content.StartsWith("FOR (") || !content.EndsWith(")"))
                 return (null, $"Line {lineNum}: Malformed FOR header. Expected: FOR (<init>, <cond>, <update>)");
 
+            // Strip "FOR (" prefix and ")" suffix.
             string inner = content["FOR (".Length..^1].Trim();
             var parts = SplitHeaderParts(inner);
             if (parts == null || parts.Count != 3)
@@ -67,6 +68,7 @@ namespace LexorInterpreter.ProgramCodes
                 return (null, $"Line {lineNum}: Expected 'START FOR' after FOR header.");
             i++;
 
+            // Collect body until matching END FOR (depth-aware).
             var (body, endIdx, bodyErr) = CollectBody(lines, i, "START FOR", "END FOR");
             if (bodyErr != null) return (null, bodyErr);
 
@@ -102,6 +104,7 @@ namespace LexorInterpreter.ProgramCodes
                 return (null, $"Line {lineNum}: Expected 'START REPEAT' after REPEAT WHEN header.");
             i++;
 
+            // Collect body until matching END REPEAT (depth-aware).
             var (body, endIdx, bodyErr) = CollectBody(lines, i, "START REPEAT", "END REPEAT");
             if (bodyErr != null) return (null, bodyErr);
 
@@ -138,7 +141,7 @@ namespace LexorInterpreter.ProgramCodes
                 else if (c == closeKeyword)
                 {
                     if (depth == 0)
-                        return (body, i, null);
+                        return (body, i, null); // Found matching close keyword.
                     depth--;
                     body.Add(lines[i]);
                 }

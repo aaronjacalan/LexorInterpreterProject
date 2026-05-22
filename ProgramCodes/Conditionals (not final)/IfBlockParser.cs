@@ -59,7 +59,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (hasElse)
                     return (null, $"Line {lines[i].LineNumber}: Unexpected '{content}' after ELSE — ELSE must be the last branch.");
 
-                if (content.StartsWith("ELSE IF "))
+                if (content.StartsWith("ELSE IF"))
                 {
                     var (elseIfBranch, elseIfErr) = ParseElseIfHeader(lines[i]);
                     if (elseIfErr != null) return (null, elseIfErr);
@@ -112,16 +112,8 @@ namespace LexorInterpreter.ProgramCodes
         private static (IfBranch? branch, string? error) ParseIfHeader(
             (int LineNumber, string Content) line)
         {
-            string content = line.Content;
-            // Expected: IF (<expr>).
-            if (!content.StartsWith("IF (") || !content.EndsWith(")"))
-                return (null, $"Line {line.LineNumber}: Malformed IF condition. Expected: IF (<expr>)");
-
-            // content = "IF (expr)" — take everything after "IF " to get "(expr)".
-            string condition = content["IF ".Length..].Trim();
-            // Remove the mandatory surrounding parens.
-            if (condition.StartsWith("(") && condition.EndsWith(")"))
-                condition = condition[1..^1].Trim();
+            if (!TryExtractParenthesizedCondition(line.Content, "IF", out string? condition, out string? error))
+                return (null, $"Line {line.LineNumber}: {error}");
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
         }
@@ -129,19 +121,92 @@ namespace LexorInterpreter.ProgramCodes
         private static (IfBranch? branch, string? error) ParseElseIfHeader(
             (int LineNumber, string Content) line)
         {
-            string content = line.Content;
-            if (!content.StartsWith("ELSE IF (") || !content.EndsWith(")"))
-                return (null, $"Line {line.LineNumber}: Malformed ELSE IF condition. Expected: ELSE IF (<expr>)");
-
-            string condition = content["ELSE IF ".Length..].Trim();
-            if (condition.StartsWith("(") && condition.EndsWith(")"))
-                condition = condition[1..^1].Trim();
+            if (!TryExtractParenthesizedCondition(line.Content, "ELSE IF", out string? condition, out string? error))
+                return (null, $"Line {line.LineNumber}: {error}");
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
         }
 
+        // Accepts IF (<expr>) and IF(<expr>) (optional space before '(').
+        private static bool TryExtractParenthesizedCondition(
+            string content,
+            string keyword,
+            out string? condition,
+            out string? error)
+        {
+            condition = null;
+            error = null;
+
+            if (!content.StartsWith(keyword))
+            {
+                error = $"Malformed {keyword} condition. Expected: {keyword} (<expr>)";
+                return false;
+            }
+
+            int i = keyword.Length;
+            while (i < content.Length && char.IsWhiteSpace(content[i])) i++;
+
+            if (i >= content.Length || content[i] != '(' || !content.EndsWith(')'))
+            {
+                error = $"Malformed {keyword} condition. Expected: {keyword} (<expr>)";
+                return false;
+            }
+
+            condition = content[(i + 1)..^1].Trim();
+            return true;
+        }
+
         // Collects body lines until matching END IF, respecting nesting.
+        // Nested IF / ELSE IF / ELSE chains are consumed as a single unit.
         private static (List<(int, string)> body, int endIdx, string? error) CollectBody(
+            List<(int LineNumber, string Content)> lines,
+            int i)
+        {
+            var body = new List<(int, string)>();
+            int depth = 0;
+
+            while (i < lines.Count)
+            {
+                string content = lines[i].Content;
+
+                if (depth == 0 && IsIfHeader(content))
+                {
+                    var (chainEnd, chainErr) = ConsumeIfElseChain(lines, i);
+                    if (chainErr != null) return (body, i, chainErr);
+                    for (int j = i; j <= chainEnd; j++)
+                        body.Add(lines[j]);
+                    i = chainEnd + 1;
+                    continue;
+                }
+
+                if (content == "START IF")
+                {
+                    depth++;
+                    body.Add(lines[i]);
+                }
+                else if (content == "END IF")
+                {
+                    if (depth == 0)
+                        return (body, i, null);
+                    depth--;
+                    body.Add(lines[i]);
+                }
+                else if (depth == 0 && IsElseBranchHeader(content))
+                {
+                    return (body, i, null); // Sibling ELSE IF/ELSE — handled by outer Parse loop.
+                }
+                else
+                {
+                    body.Add(lines[i]);
+                }
+                i++;
+            }
+
+            return (body, i, $"Missing 'END IF'.");
+        }
+
+        // Collects lines for one branch (between START IF and its END IF).
+        private static (List<(int, string)> body, int endIdx, string? error) CollectSimpleBody(
             List<(int LineNumber, string Content)> lines,
             int i)
         {
@@ -160,13 +225,9 @@ namespace LexorInterpreter.ProgramCodes
                 else if (content == "END IF")
                 {
                     if (depth == 0)
-                        return (body, i, null); // Found our END IF.
+                        return (body, i, null);
                     depth--;
                     body.Add(lines[i]);
-                }
-                else if (depth == 0 && (content == "ELSE" || content.StartsWith("ELSE IF ")))
-                {
-                    return (body, i, $"Line {lines[i].LineNumber}: Unexpected '{content}' without a matching IF condition.");
                 }
                 else
                 {
@@ -177,5 +238,50 @@ namespace LexorInterpreter.ProgramCodes
 
             return (body, i, $"Missing 'END IF'.");
         }
+
+        // Consumes a full IF / ELSE IF* / ELSE? chain starting at the IF header line.
+        private static (int chainEndIdx, string? error) ConsumeIfElseChain(
+            List<(int LineNumber, string Content)> lines,
+            int start)
+        {
+            if (start >= lines.Count || !IsIfHeader(lines[start].Content))
+                return (start, "Malformed IF block.");
+
+            int i = start + 1;
+
+            if (i >= lines.Count || lines[i].Content != "START IF")
+                return (start, $"Line {lines[start].LineNumber}: Expected 'START IF' after IF condition.");
+
+            i++;
+            var (_, afterFirst, err) = CollectSimpleBody(lines, i);
+            if (err != null) return (start, err);
+            i = afterFirst + 1; // skip branch END IF
+
+            while (i < lines.Count && IsElseBranchHeader(lines[i].Content))
+            {
+                i++; // skip ELSE IF (...) or ELSE
+
+                if (i >= lines.Count || lines[i].Content != "START IF")
+                    return (start, $"Line {lines[i - 1].LineNumber}: Expected 'START IF' after {lines[i - 1].Content}.");
+
+                i++;
+                var (_, afterBranch, branchErr) = CollectSimpleBody(lines, i);
+                if (branchErr != null) return (start, branchErr);
+                i = afterBranch + 1;
+            }
+
+            return (i - 1, null);
+        }
+
+        private static bool IsIfHeader(string content)
+        {
+            if (!content.StartsWith("IF")) return false;
+            int i = 2;
+            while (i < content.Length && char.IsWhiteSpace(content[i])) i++;
+            return i < content.Length && content[i] == '(';
+        }
+
+        private static bool IsElseBranchHeader(string content)
+            => content == "ELSE" || content.StartsWith("ELSE IF");
     }
 }

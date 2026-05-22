@@ -54,7 +54,7 @@ namespace LexorInterpreter.ProgramCodes
                 var (lineNum, content) = lines[i];
 
                 // ---- IF / ELSE IF / ELSE chain ----
-                if (content.StartsWith("IF ("))
+                if (IsIfStatement(content))
                 {
                     var (block, parseErr) = IfBlockParser.Parse(lines, i);
                     if (parseErr != null) return $"Line {lineNum}: {parseErr}";
@@ -172,6 +172,15 @@ namespace LexorInterpreter.ProgramCodes
             while (i < body.Count && body[i].Content.StartsWith("DECLARE "))
                 i++;
             return i;
+        }
+
+        // Returns true for IF (<expr>) or IF(<expr>).
+        private static bool IsIfStatement(string line)
+        {
+            if (!line.StartsWith("IF")) return false;
+            int i = 2;
+            while (i < line.Length && char.IsWhiteSpace(line[i])) i++;
+            return i < line.Length && line[i] == '(';
         }
 
         // Returns true if the line looks like an assignment.
