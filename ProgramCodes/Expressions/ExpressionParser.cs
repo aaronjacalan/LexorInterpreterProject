@@ -198,6 +198,9 @@ namespace LexorInterpreter.ProgramCodes
                 return (null, DataType.BOOL, $"Line {_lineNumber}: BOOL literals must be uppercase TRUE/FALSE.");
             }
 
+            if (Match(TokenKind.STRING_LITERAL, out var stringTok))
+                return (stringTok!.Lexeme, DataType.STRING, null);
+
             if (Match(TokenKind.IDENT, out var identTok))
             {
                 string name = identTok!.Lexeme;

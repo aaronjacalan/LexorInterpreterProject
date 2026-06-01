@@ -146,6 +146,14 @@ namespace LexorInterpreter.ProgramCodes
                         return $"Line {lineNum}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").";
                     return $"Line {lineNum}: '{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
 
+                case DataType.STRING:
+                    if (raw.Length >= 2 && raw[0] == '"' && raw[^1] == '"')
+                    {
+                        value = raw[1..^1];
+                        return null;
+                    }
+                    return $"Line {lineNum}: '{raw}' is not a valid STRING - use double quotes.";
+
                 default:
                     return $"Line {lineNum}: Unsupported type for literal parsing.";
             }
@@ -158,6 +166,7 @@ namespace LexorInterpreter.ProgramCodes
             DataType.FLOAT => (object)0.0f,
             DataType.CHAR  => (object)'\0',
             DataType.BOOL  => (object)false,
+            DataType.STRING => (object)string.Empty,
             _              => null
         };
     }

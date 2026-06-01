@@ -14,8 +14,28 @@ namespace LexorInterpreter.ProgramCodes
         // Strips everything from %% onward on a single line.
         public static string StripComment(string line)
         {
-            int idx = line.IndexOf("%%");
-            return idx >= 0 ? line[..idx] : line;
+            bool inStr = false;
+            char strCh = '"';
+
+            for (int i = 0; i < line.Length - 1; i++)
+            {
+                char c = line[i];
+                if (!inStr && (c == '"' || c == '\''))
+                {
+                    inStr = true;
+                    strCh = c;
+                }
+                else if (inStr && c == strCh)
+                {
+                    inStr = false;
+                }
+                else if (!inStr && c == '%' && line[i + 1] == '%')
+                {
+                    return line[..i];
+                }
+            }
+
+            return line;
         }
 
         // Tokenizes the source into (lineNumber, cleanedLine) pairs, skipping blanks/comments.

@@ -45,7 +45,7 @@ namespace LexorInterpreter.ProgramCodes
 
                 if (c == '"')
                 {
-                    // BOOL literals may appear as "TRUE"/"FALSE" (common in declarations).
+                    // BOOL literals may appear as "TRUE"/"FALSE"; all other quoted text is STRING.
                     _i++; // skip "
                     string inner = ReadUntil('"');
                     if (_i >= _src.Length || _src[_i] != '"')
@@ -57,7 +57,7 @@ namespace LexorInterpreter.ProgramCodes
                     else if (inner is "true" or "false")
                         return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.");
                     else
-                        return (null, $"Line {lineNumber}: Strings are not valid in expressions (only \"TRUE\"/\"FALSE\" are allowed).");
+                        tokens.Add(new Token(TokenKind.STRING_LITERAL, inner));
                     continue;
                 }
 

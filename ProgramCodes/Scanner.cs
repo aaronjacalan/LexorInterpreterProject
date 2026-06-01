@@ -126,6 +126,14 @@ namespace LexorInterpreter.ProgramCodes
                         return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE (quotes optional)");
                     return (null, $"Line {lineNumber}: '{raw}' is not a valid BOOL for SCAN (use TRUE/FALSE)");
 
+                case DataType.STRING:
+                    string stringValue = raw.Trim();
+                    if (stringValue.Length >= 2 && stringValue[0] == '"' && stringValue[^1] == '"')
+                        return (stringValue[1..^1], null);
+                    if (stringValue.Length >= 2 && stringValue[0] == '\'' && stringValue[^1] == '\'')
+                        return (null, $"Line {lineNumber}: STRING values for SCAN must use double quotes when quoted");
+                    return (stringValue, null);
+
                 default:
                     return (null, $"Line {lineNumber}: Unsupported type for SCAN");
             }

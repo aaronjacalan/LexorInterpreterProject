@@ -2,7 +2,7 @@ namespace LexorInterpreter.ProgramCodes
 {
     public enum DataType
     {
-        INT, CHAR, BOOL, FLOAT
+        INT, CHAR, BOOL, FLOAT, STRING
     }
 
     internal enum TokenKind
@@ -11,7 +11,7 @@ namespace LexorInterpreter.ProgramCodes
         EOF,
 
         // Identifiers + literals.
-        IDENT, INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, BOOL_LITERAL,
+        IDENT, INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, BOOL_LITERAL, STRING_LITERAL,
 
         // Grouping.
         LPAREN, RPAREN,
@@ -32,7 +32,7 @@ namespace LexorInterpreter.ProgramCodes
         public static readonly HashSet<string> ReservedWords = new()
         {
             "SCRIPT", "AREA", "START", "END", "DECLARE",
-            "PRINT", "SCAN", "INT", "CHAR", "BOOL", "FLOAT",
+            "PRINT", "SCAN", "INT", "CHAR", "BOOL", "FLOAT", "STRING",
             "TRUE", "FALSE", "AND", "OR", "NOT",
             "IF", "ELSE", "FOR", "REPEAT", "WHEN"
         };
