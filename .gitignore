@@ -1,0 +1,58 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vs/
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nupkg
+*.nuget.props
+*.nuget.targets
+packages.lock.json
+
+# Build
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+*.dll
+*.exe
+*.pdb
+*.msi
+*.msp
+*.appx
+*.appinstaller
+
+# Visual Studio
+.vs/
+*.sln.ide/
+*.opendb
+*.VC.db
+*.VC.opendb
+*.dbmdl
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+_ReSharper*/
+*.[Rr]ider/
+
+# Logs
+*.log
+*.etl
+*.wer
+
+# OS
+[Dd]esktop.ini
+Thumbs.db
+*.DS_Store
