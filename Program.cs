@@ -8,7 +8,14 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.Clear();
+        try
+        {
+            Console.Clear();
+        }
+        catch (IOException)
+        {
+            // Output may be redirected during automated checks.
+        }
 
         void Fail(string message)
         {

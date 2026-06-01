@@ -21,6 +21,8 @@ namespace LexorInterpreter.ProgramCodes
             if (structErr != null) return NormalizeError(structErr);
 
             var body = ExtractBody(lines);
+            if (body.Count == 0)
+                return NormalizeError("[ERROR - Line 0] Script body is empty.");
 
             // Split the body into DECLARE lines and executable statements.
             int boundary     = FindDeclareBoundary(body);
