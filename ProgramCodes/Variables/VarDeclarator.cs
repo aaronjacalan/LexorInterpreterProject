@@ -16,9 +16,11 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            // Remove "DECLARE " prefix and read the type token.
-            string rest = line["DECLARE".Length..].Trim();
-            int spaceIdx = rest.IndexOf(' ');
+            // Remove "DECLARE" prefix and read the type token.
+            if (!Syntax.StartsWithKeyword(line, "DECLARE", out string rest))
+                return $"Line {lineNumber}: Invalid DECLARE syntax.";
+
+            int spaceIdx = rest.IndexOfAny(new[] { ' ', '\t' });
             if (spaceIdx < 0)
                 return $"Line {lineNumber}: Invalid DECLARE syntax — missing type or variable name.";
 

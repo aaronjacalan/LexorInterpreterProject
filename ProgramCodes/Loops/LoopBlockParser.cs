@@ -31,10 +31,10 @@ namespace LexorInterpreter.ProgramCodes
         {
             var (lineNum, content) = lines[startIndex];
 
-            if (content.StartsWith("FOR ("))
+            if (Syntax.TryParenthesizedHeader(content, new[] { "FOR" }, out _))
                 return ParseFor(lines, startIndex);
 
-            if (content.StartsWith("REPEAT WHEN ("))
+            if (Syntax.TryParenthesizedHeader(content, new[] { "REPEAT", "WHEN" }, out _))
                 return ParseRepeat(lines, startIndex);
 
             return (null, $"Line {lineNum}: Expected FOR or REPEAT WHEN loop header.");
@@ -46,11 +46,9 @@ namespace LexorInterpreter.ProgramCodes
         {
             var (lineNum, content) = lines[i];
 
-            if (!content.StartsWith("FOR (") || !content.EndsWith(")"))
+            if (!Syntax.TryParenthesizedHeader(content, new[] { "FOR" }, out string inner))
                 return (null, $"Line {lineNum}: Malformed FOR header. Expected: FOR (<init>, <cond>, <update>)");
 
-            // Strip "FOR (" prefix and ")" suffix.
-            string inner = content["FOR (".Length..^1].Trim();
             var parts = SplitHeaderParts(inner);
             if (parts == null || parts.Count != 3)
                 return (null, $"Line {lineNum}: FOR header must have exactly three parts separated by ','.");
@@ -64,12 +62,12 @@ namespace LexorInterpreter.ProgramCodes
 
             i++;
 
-            if (i >= lines.Count || lines[i].Content != "START FOR")
+            if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "FOR"))
                 return (null, $"Line {lineNum}: Expected 'START FOR' after FOR header.");
             i++;
 
             // Collect body until matching END FOR (depth-aware).
-            var (body, endIdx, bodyErr) = CollectBody(lines, i, "START FOR", "END FOR");
+            var (body, endIdx, bodyErr) = CollectBody(lines, i, "FOR");
             if (bodyErr != null) return (null, bodyErr);
 
             var block = new LoopBlock
@@ -91,21 +89,20 @@ namespace LexorInterpreter.ProgramCodes
         {
             var (lineNum, content) = lines[i];
 
-            if (!content.StartsWith("REPEAT WHEN (") || !content.EndsWith(")"))
+            if (!Syntax.TryParenthesizedHeader(content, new[] { "REPEAT", "WHEN" }, out string condition))
                 return (null, $"Line {lineNum}: Malformed REPEAT header. Expected: REPEAT WHEN (<bool expr>)");
 
-            string condition = content["REPEAT WHEN (".Length..^1].Trim();
             if (string.IsNullOrWhiteSpace(condition))
                 return (null, $"Line {lineNum}: REPEAT WHEN condition must not be empty.");
 
             i++;
 
-            if (i >= lines.Count || lines[i].Content != "START REPEAT")
+            if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "REPEAT"))
                 return (null, $"Line {lineNum}: Expected 'START REPEAT' after REPEAT WHEN header.");
             i++;
 
             // Collect body until matching END REPEAT (depth-aware).
-            var (body, endIdx, bodyErr) = CollectBody(lines, i, "START REPEAT", "END REPEAT");
+            var (body, endIdx, bodyErr) = CollectBody(lines, i, "REPEAT");
             if (bodyErr != null) return (null, bodyErr);
 
             var block = new LoopBlock
@@ -123,8 +120,7 @@ namespace LexorInterpreter.ProgramCodes
         private static (List<(int, string)> body, int endIdx, string? error) CollectBody(
             List<(int LineNumber, string Content)> lines,
             int i,
-            string openKeyword,
-            string closeKeyword)
+            string loopKeyword)
         {
             var body  = new List<(int, string)>();
             int depth = 0;
@@ -133,12 +129,12 @@ namespace LexorInterpreter.ProgramCodes
             {
                 string c = lines[i].Content;
 
-                if (c == openKeyword)
+                if (Syntax.IsKeywordLine(c, "START", loopKeyword))
                 {
                     depth++;
                     body.Add(lines[i]);
                 }
-                else if (c == closeKeyword)
+                else if (Syntax.IsKeywordLine(c, "END", loopKeyword))
                 {
                     if (depth == 0)
                         return (body, i, null); // Found matching close keyword.
@@ -152,7 +148,7 @@ namespace LexorInterpreter.ProgramCodes
                 i++;
             }
 
-            return (body, i, $"Missing '{closeKeyword}'.");
+            return (body, i, $"Missing 'END {loopKeyword}'.");
         }
 
         // Splits on top-level commas, ignoring those inside quotes or parens.

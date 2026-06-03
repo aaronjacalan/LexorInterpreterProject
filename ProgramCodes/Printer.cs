@@ -12,10 +12,9 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            if (!line.StartsWith("PRINT:"))
+            if (!Syntax.TryReadCommand(line, "PRINT", out string rest))
                 return $"Line {lineNumber}: Malformed PRINT statement.";
 
-            string rest = line["PRINT:".Length..].Trim();
             var output  = new System.Text.StringBuilder();
 
             foreach (string token in SplitByConcatenator(rest))

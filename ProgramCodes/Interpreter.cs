@@ -72,7 +72,7 @@ namespace LexorInterpreter.ProgramCodes
                     i = block!.EndIndex + 1;
                 }
                 // ---- FOR loop ----
-                else if (content.StartsWith("FOR ("))
+                else if (Syntax.TryParenthesizedHeader(content, new[] { "FOR" }, out _))
                 {
                     var (loop, parseErr) = LoopBlockParser.Parse(lines, i);
                     if (parseErr != null) return parseErr;
@@ -88,7 +88,7 @@ namespace LexorInterpreter.ProgramCodes
                     i = loop!.EndIndex + 1;
                 }
                 // ---- REPEAT WHEN loop ----
-                else if (content.StartsWith("REPEAT WHEN ("))
+                else if (Syntax.TryParenthesizedHeader(content, new[] { "REPEAT", "WHEN" }, out _))
                 {
                     var (loop, parseErr) = LoopBlockParser.Parse(lines, i);
                     if (parseErr != null) return parseErr;
@@ -116,10 +116,10 @@ namespace LexorInterpreter.ProgramCodes
         // Dispatches a single (non-control-flow) statement line.
         private string? ExecuteStatement(string line, int lineNumber)
         {
-            if (line.StartsWith("PRINT:"))
+            if (Syntax.TryReadCommand(line, "PRINT", out _))
                 return Printer.Execute(line, lineNumber, _symbolTable);
 
-            if (line.StartsWith("SCAN:"))
+            if (Syntax.TryReadCommand(line, "SCAN", out _))
                 return Scanner.Execute(line, lineNumber, _symbolTable);
 
             if (IsAssignment(line))
@@ -134,11 +134,11 @@ namespace LexorInterpreter.ProgramCodes
             if (lines.Count == 0)
                 return "[ERROR - Line 0] Source file is empty.";
 
-            if (lines[0].Content != "SCRIPT AREA")
+            if (!Syntax.IsKeywordLine(lines[0].Content, "SCRIPT", "AREA"))
                 return $"Line {lines[0].LineNumber}: Program must begin with 'SCRIPT AREA'.";
 
-            var startLines = lines.Where(l => l.Content == "START SCRIPT").Select(l => l.LineNumber).ToList();
-            var endLines   = lines.Where(l => l.Content == "END SCRIPT").Select(l => l.LineNumber).ToList();
+            var startLines = lines.Where(l => Syntax.IsKeywordLine(l.Content, "START", "SCRIPT")).Select(l => l.LineNumber).ToList();
+            var endLines   = lines.Where(l => Syntax.IsKeywordLine(l.Content, "END", "SCRIPT")).Select(l => l.LineNumber).ToList();
 
             if (startLines.Count == 0) return "[ERROR - Line 0] Missing 'START SCRIPT'.";
             if (endLines.Count == 0)   return "[ERROR - Line 0] Missing 'END SCRIPT'.";
@@ -149,8 +149,8 @@ namespace LexorInterpreter.ProgramCodes
             if (endLines.Count > 1)
                 return $"[ERROR - Line {endLines[1]}] Duplicate 'END SCRIPT'.";
 
-            int startIdx = lines.FindIndex(l => l.Content == "START SCRIPT");
-            int endIdx   = lines.FindIndex(l => l.Content == "END SCRIPT");
+            int startIdx = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "START", "SCRIPT"));
+            int endIdx   = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "END", "SCRIPT"));
 
             if (startIdx >= endIdx)
                 return $"[ERROR - Line {lines[endIdx].LineNumber}] 'END SCRIPT' must come after 'START SCRIPT'.";
@@ -162,8 +162,8 @@ namespace LexorInterpreter.ProgramCodes
         private static List<(int LineNumber, string Content)> ExtractBody(
             List<(int LineNumber, string Content)> lines)
         {
-            int start = lines.FindIndex(l => l.Content == "START SCRIPT") + 1;
-            int end   = lines.FindIndex(l => l.Content == "END SCRIPT");
+            int start = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "START", "SCRIPT")) + 1;
+            int end   = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "END", "SCRIPT"));
             return lines[start..end];
         }
 
@@ -171,7 +171,7 @@ namespace LexorInterpreter.ProgramCodes
         private static int FindDeclareBoundary(List<(int LineNumber, string Content)> body)
         {
             int i = 0;
-            while (i < body.Count && body[i].Content.StartsWith("DECLARE "))
+            while (i < body.Count && Syntax.StartsWithKeyword(body[i].Content, "DECLARE", out _))
                 i++;
             return i;
         }
@@ -179,17 +179,14 @@ namespace LexorInterpreter.ProgramCodes
         // Returns true for IF (<expr>) or IF(<expr>).
         private static bool IsIfStatement(string line)
         {
-            if (!line.StartsWith("IF")) return false;
-            int i = 2;
-            while (i < line.Length && char.IsWhiteSpace(line[i])) i++;
-            return i < line.Length && line[i] == '(';
+            return Syntax.TryParenthesizedHeader(line, new[] { "IF" }, out _);
         }
 
         // Returns true if the line looks like an assignment.
         private static bool IsAssignment(string line)
             => line.Contains('=')
-               && !line.StartsWith("DECLARE")
-               && !line.StartsWith("PRINT");
+               && !Syntax.StartsWithKeyword(line, "DECLARE", out _)
+               && !Syntax.TryReadCommand(line, "PRINT", out _);
 
         // Formats an interpreter error message.
         private static string NormalizeError(string message)

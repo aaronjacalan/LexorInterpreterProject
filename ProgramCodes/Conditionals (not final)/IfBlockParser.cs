@@ -36,7 +36,7 @@ namespace LexorInterpreter.ProgramCodes
             i++;
 
             // Expect START IF.
-            if (i >= lines.Count || lines[i].Content != "START IF")
+            if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
                 return (null, $"Line {lines[i > 0 ? i - 1 : 0].LineNumber}: Expected 'START IF' after IF condition.");
             i++;
 
@@ -57,15 +57,19 @@ namespace LexorInterpreter.ProgramCodes
                 string content = lines[i].Content;
 
                 if (hasElse)
-                    return (null, $"Line {lines[i].LineNumber}: Unexpected '{content}' after ELSE — ELSE must be the last branch.");
+                {
+                    if (IsElseBranchHeader(content))
+                        return (null, $"Line {lines[i].LineNumber}: Unexpected '{content}' after ELSE — ELSE must be the last branch.");
+                    break;
+                }
 
-                if (content.StartsWith("ELSE IF"))
+                if (IsElseIfHeader(content))
                 {
                     var (elseIfBranch, elseIfErr) = ParseElseIfHeader(lines[i]);
                     if (elseIfErr != null) return (null, elseIfErr);
                     i++;
 
-                    if (i >= lines.Count || lines[i].Content != "START IF")
+                    if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
                         return (null, $"Line {lines[i - 1].LineNumber}: Expected 'START IF' after ELSE IF condition.");
                     i++;
 
@@ -75,12 +79,12 @@ namespace LexorInterpreter.ProgramCodes
                     block.Branches.Add(elseIfBranch);
                     i = afterElseIfBody + 1; // skip END IF
                 }
-                else if (content == "ELSE")
+                else if (Syntax.IsKeywordLine(content, "ELSE"))
                 {
                     int elseLine = lines[i].LineNumber;
                     i++;
 
-                    if (i >= lines.Count || lines[i].Content != "START IF")
+                    if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
                         return (null, $"Line {elseLine}: Expected 'START IF' after ELSE.");
                     i++;
 
@@ -112,7 +116,7 @@ namespace LexorInterpreter.ProgramCodes
         private static (IfBranch? branch, string? error) ParseIfHeader(
             (int LineNumber, string Content) line)
         {
-            if (!TryExtractParenthesizedCondition(line.Content, "IF", out string? condition, out string? error))
+            if (!TryExtractParenthesizedCondition(line.Content, new[] { "IF" }, out string? condition, out string? error))
                 return (null, $"Line {line.LineNumber}: {error}");
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
@@ -121,7 +125,7 @@ namespace LexorInterpreter.ProgramCodes
         private static (IfBranch? branch, string? error) ParseElseIfHeader(
             (int LineNumber, string Content) line)
         {
-            if (!TryExtractParenthesizedCondition(line.Content, "ELSE IF", out string? condition, out string? error))
+            if (!TryExtractParenthesizedCondition(line.Content, new[] { "ELSE", "IF" }, out string? condition, out string? error))
                 return (null, $"Line {line.LineNumber}: {error}");
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
@@ -130,29 +134,21 @@ namespace LexorInterpreter.ProgramCodes
         // Accepts IF (<expr>) and IF(<expr>) (optional space before '(').
         private static bool TryExtractParenthesizedCondition(
             string content,
-            string keyword,
+            string[] keywords,
             out string? condition,
             out string? error)
         {
             condition = null;
             error = null;
 
-            if (!content.StartsWith(keyword))
+            if (!Syntax.TryParenthesizedHeader(content, keywords, out string inner))
             {
-                error = $"Malformed {keyword} condition. Expected: {keyword} (<expr>)";
+                string keywordText = string.Join(" ", keywords);
+                error = $"Malformed {keywordText} condition. Expected: {keywordText} (<expr>)";
                 return false;
             }
 
-            int i = keyword.Length;
-            while (i < content.Length && char.IsWhiteSpace(content[i])) i++;
-
-            if (i >= content.Length || content[i] != '(' || !content.EndsWith(')'))
-            {
-                error = $"Malformed {keyword} condition. Expected: {keyword} (<expr>)";
-                return false;
-            }
-
-            condition = content[(i + 1)..^1].Trim();
+            condition = inner;
             return true;
         }
 
@@ -179,12 +175,12 @@ namespace LexorInterpreter.ProgramCodes
                     continue;
                 }
 
-                if (content == "START IF")
+                if (Syntax.IsKeywordLine(content, "START", "IF"))
                 {
                     depth++;
                     body.Add(lines[i]);
                 }
-                else if (content == "END IF")
+                else if (Syntax.IsKeywordLine(content, "END", "IF"))
                 {
                     if (depth == 0)
                         return (body, i, null);
@@ -217,12 +213,12 @@ namespace LexorInterpreter.ProgramCodes
             {
                 string content = lines[i].Content;
 
-                if (content == "START IF")
+                if (Syntax.IsKeywordLine(content, "START", "IF"))
                 {
                     depth++;
                     body.Add(lines[i]);
                 }
-                else if (content == "END IF")
+                else if (Syntax.IsKeywordLine(content, "END", "IF"))
                 {
                     if (depth == 0)
                         return (body, i, null);
@@ -249,7 +245,7 @@ namespace LexorInterpreter.ProgramCodes
 
             int i = start + 1;
 
-            if (i >= lines.Count || lines[i].Content != "START IF")
+            if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
                 return (start, $"Line {lines[start].LineNumber}: Expected 'START IF' after IF condition.");
 
             i++;
@@ -261,7 +257,7 @@ namespace LexorInterpreter.ProgramCodes
             {
                 i++; // skip ELSE IF (...) or ELSE
 
-                if (i >= lines.Count || lines[i].Content != "START IF")
+                if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
                     return (start, $"Line {lines[i - 1].LineNumber}: Expected 'START IF' after {lines[i - 1].Content}.");
 
                 i++;
@@ -275,13 +271,13 @@ namespace LexorInterpreter.ProgramCodes
 
         private static bool IsIfHeader(string content)
         {
-            if (!content.StartsWith("IF")) return false;
-            int i = 2;
-            while (i < content.Length && char.IsWhiteSpace(content[i])) i++;
-            return i < content.Length && content[i] == '(';
+            return Syntax.TryParenthesizedHeader(content, new[] { "IF" }, out _);
         }
 
         private static bool IsElseBranchHeader(string content)
-            => content == "ELSE" || content.StartsWith("ELSE IF");
+            => Syntax.IsKeywordLine(content, "ELSE") || IsElseIfHeader(content);
+
+        private static bool IsElseIfHeader(string content)
+            => Syntax.TryParenthesizedHeader(content, new[] { "ELSE", "IF" }, out _);
     }
 }

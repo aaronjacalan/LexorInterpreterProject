@@ -13,10 +13,9 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            if (!line.StartsWith("SCAN:"))
+            if (!Syntax.TryReadCommand(line, "SCAN", out string rest))
                 return $"Line {lineNumber}: Malformed SCAN statement";
 
-            string rest = line["SCAN:".Length..].Trim();
             if (string.IsNullOrWhiteSpace(rest))
                 return $"Line {lineNumber}: SCAN requires at least one variable name";
 
