@@ -108,8 +108,6 @@ namespace LexorInterpreter.ProgramCodes
                     return $"Line {lineNum}: '{raw}' is not a valid INT.";
 
                 case DataType.FLOAT:
-                    if (!raw.Contains('.'))
-                        return $"Line {lineNum}: FLOAT literals must include a decimal point.";
                     if (float.TryParse(raw,
                         System.Globalization.NumberStyles.Float,
                         System.Globalization.CultureInfo.InvariantCulture,

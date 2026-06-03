@@ -94,7 +94,6 @@ namespace LexorInterpreter.ProgramCodes
                     return (iv, null);
 
                 case DataType.FLOAT:
-                    if (!raw.Contains('.')) return (null, $"Line {lineNumber}: 'FLOAT {raw}' must include a decimal point");
                     if (!float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float fv))
                         return double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out _)
                             ? (null, $"Line {lineNumber}: FLOAT literal out of range for SCAN")
