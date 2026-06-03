@@ -122,10 +122,64 @@ namespace LexorInterpreter.ProgramCodes
             if (Syntax.TryReadCommand(line, "SCAN", out _))
                 return Scanner.Execute(line, lineNumber, _symbolTable);
 
+            if (Syntax.TryReadCommand(line, "PUSH", out string pushRest))
+                return ExecutePush(pushRest, lineNumber);
+
+            if (Syntax.TryReadCommand(line, "POP", out string popRest))
+                return ExecutePop(popRest, lineNumber);
+
             if (IsAssignment(line))
                 return VariableAssignor.Execute(line, lineNumber, _symbolTable);
 
             return $"Unrecognized statement '{line}'.";
+        }
+
+        private string? ExecutePush(string args, int lineNumber)
+        {
+            int comma = args.IndexOf(',');
+            if (comma < 0)
+                return $"PUSH requires: stack_name, value";
+
+            string stackName = args[..comma].Trim();
+            string rawValue  = args[(comma + 1)..].Trim();
+
+            if (!_symbolTable.TryGetValue(stackName, out var stackVar))
+                return $"Undefined stack '{stackName}'.";
+            if (!TypeHelper.IsStackType(stackVar.DataType))
+                return $"'{stackName}' is not a stack.";
+
+            DataType elemType = TypeHelper.ElementType(stackVar.DataType);
+            var (value, actualType, evalErr) = ExpressionEvaluator.Evaluate(rawValue, lineNumber, _symbolTable);
+            if (evalErr != null) return evalErr;
+
+            if (actualType != elemType)
+            {
+                if (elemType == DataType.FLOAT && actualType == DataType.INT)
+                    value = (float)(int)value!;
+                else
+                    return $"Type mismatch — cannot push {actualType} onto {stackName} ({elemType} stack).";
+            }
+
+            var stack = (System.Collections.Generic.Stack<object>)stackVar.Value!;
+            stack.Push(value!);
+            return null;
+        }
+
+        private string? ExecutePop(string stackName, int lineNumber)
+        {
+            if (string.IsNullOrWhiteSpace(stackName))
+                return $"POP requires: stack_name";
+
+            if (!_symbolTable.TryGetValue(stackName, out var stackVar))
+                return $"Undefined stack '{stackName}'.";
+            if (!TypeHelper.IsStackType(stackVar.DataType))
+                return $"'{stackName}' is not a stack.";
+
+            var stack = (System.Collections.Generic.Stack<object>)stackVar.Value!;
+            if (stack.Count == 0)
+                return $"Cannot POP from empty stack '{stackName}'.";
+            stack.Pop();
+            return null;
         }
 
         // Validates SCRIPT AREA / START SCRIPT / END SCRIPT structure.

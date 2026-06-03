@@ -79,6 +79,10 @@ namespace LexorInterpreter.ProgramCodes
                         _i++; tokens.Add(new Token(TokenKind.LPAREN, "(")); break;
                     case ')':
                         _i++; tokens.Add(new Token(TokenKind.RPAREN, ")")); break;
+                    case '[':
+                        _i++; tokens.Add(new Token(TokenKind.LBRACKET, "[")); break;
+                    case ']':
+                        _i++; tokens.Add(new Token(TokenKind.RBRACKET, "]")); break;
                     case '+':
                         _i++; tokens.Add(new Token(TokenKind.PLUS, "+")); break;
                     case '-':

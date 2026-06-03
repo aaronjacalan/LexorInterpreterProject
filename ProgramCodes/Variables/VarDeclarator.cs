@@ -1,8 +1,4 @@
-// Parses `DECLARE` statements and creates variables.
-// - Supports multiple declarations per line (comma-separated)
-// - Allows optional initial values, otherwise uses type defaults
-// - Rejects invalid names, duplicates, and reserved words
-
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace LexorInterpreter.ProgramCodes
@@ -16,7 +12,6 @@ namespace LexorInterpreter.ProgramCodes
             int lineNumber,
             Dictionary<string, Variable> symbolTable)
         {
-            // Remove "DECLARE" prefix and read the type token.
             if (!Syntax.StartsWithKeyword(line, "DECLARE", out string rest))
                 return $"Invalid DECLARE syntax.";
 
@@ -36,6 +31,45 @@ namespace LexorInterpreter.ProgramCodes
                 string varName;
                 object? initValue;
 
+                if (TypeHelper.IsArrayType(dataType))
+                {
+                    int parenOpen = trimmed.IndexOf('(');
+                    int parenClose = trimmed.IndexOf(')');
+                    if (parenOpen < 0 || parenClose < 0 || parenClose != trimmed.Length - 1)
+                        return $"Array declaration must use 'name(size)' syntax, e.g. arr(5).";
+
+                    varName = trimmed[..parenOpen].Trim();
+                    string sizeStr = trimmed[(parenOpen + 1)..parenClose].Trim();
+
+                    if (!int.TryParse(sizeStr, out int arraySize) || arraySize < 1)
+                        return $"Array size must be a positive integer, got '{sizeStr}'.";
+
+                    if (!ValidName.IsMatch(varName))
+                        return $"Invalid variable name '{varName}'.";
+                    if (Lexer.IsReservedWord(varName))
+                        return $"'{varName}' is a reserved word and cannot be a variable name.";
+                    if (symbolTable.ContainsKey(varName))
+                        return $"Variable '{varName}' is already declared.";
+
+                    initValue = ArrayDefaultValue(dataType, arraySize);
+                    symbolTable[varName] = new Variable(varName, dataType, initValue, true);
+                    continue;
+                }
+
+                if (TypeHelper.IsStackType(dataType))
+                {
+                    varName = trimmed;
+                    if (!ValidName.IsMatch(varName))
+                        return $"Invalid variable name '{varName}'.";
+                    if (Lexer.IsReservedWord(varName))
+                        return $"'{varName}' is a reserved word and cannot be a variable name.";
+                    if (symbolTable.ContainsKey(varName))
+                        return $"Variable '{varName}' is already declared.";
+
+                    symbolTable[varName] = new Variable(varName, dataType, new Stack<object>(), true);
+                    continue;
+                }
+
                 bool hasInitValue = trimmed.Contains('=');
                 if (hasInitValue)
                 {
@@ -51,15 +85,12 @@ namespace LexorInterpreter.ProgramCodes
                     initValue = DefaultValue(dataType);
                 }
 
-                // Validate the variable name.
                 if (!ValidName.IsMatch(varName))
                     return $"Invalid variable name '{varName}'.";
 
-                // Validate the variable name is not a reserved word.
                 if (Lexer.IsReservedWord(varName))
                     return $"'{varName}' is a reserved word and cannot be a variable name.";
 
-                // Validate the variable name is not already declared.
                 if (symbolTable.ContainsKey(varName))
                     return $"Variable '{varName}' is already declared.";
 
@@ -69,7 +100,6 @@ namespace LexorInterpreter.ProgramCodes
             return null;
         }
 
-        // Splits "x, y=5, z" on commas while respecting quoted literals.
         private static List<string> SplitDeclarations(string input)
         {
             var  parts = new List<string>();
@@ -92,7 +122,6 @@ namespace LexorInterpreter.ProgramCodes
             return parts;
         }
 
-        // Parses a literal value into the appropriate type.
         private static string? ParseLiteral(
             string raw, DataType type, int lineNum, out object? value)
         {
@@ -159,7 +188,6 @@ namespace LexorInterpreter.ProgramCodes
             }
         }
 
-        // Returns the default value for a given data type.
         private static object? DefaultValue(DataType type) => type switch
         {
             DataType.INT   => (object)0,
@@ -169,5 +197,14 @@ namespace LexorInterpreter.ProgramCodes
             DataType.STRING => (object)string.Empty,
             _              => null
         };
+
+        private static object? ArrayDefaultValue(DataType arrType, int size)
+        {
+            var elemType = TypeHelper.ElementType(arrType);
+            var arr = new object[size];
+            for (int i = 0; i < size; i++)
+                arr[i] = DefaultValue(elemType)!;
+            return arr;
+        }
     }
 }

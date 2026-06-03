@@ -14,7 +14,7 @@ class Program
         }
         catch (IOException)
         {
-            // Output may be redirected during automated checks.
+            Fail("[ERROR] Failed to clear console.");
         }
 
         void Fail(string message)

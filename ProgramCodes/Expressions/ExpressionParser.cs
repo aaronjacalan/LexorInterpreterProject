@@ -204,6 +204,62 @@ namespace LexorInterpreter.ProgramCodes
             if (Match(TokenKind.IDENT, out var identTok))
             {
                 string name = identTok!.Lexeme;
+
+                // TOP(stack_name) — returns top element without removing.
+                if (string.Equals(name, "TOP", System.StringComparison.OrdinalIgnoreCase) && Peek().Kind == TokenKind.LPAREN)
+                {
+                    Advance();
+                    if (!Match(TokenKind.IDENT, out var stackNameTok))
+                        return (null, DataType.INT, $"TOP expects a stack variable name.");
+                    if (!Match(TokenKind.RPAREN))
+                        return (null, DataType.INT, $"Missing ')' after TOP argument.");
+
+                    string stackName = stackNameTok!.Lexeme;
+                    if (!_symbols.TryGetValue(stackName, out var stackVar))
+                        return (null, DataType.INT, $"Undefined stack '{stackName}'.");
+                    if (!TypeHelper.IsStackType(stackVar.DataType))
+                        return (null, DataType.INT, $"'{stackName}' is not a stack.");
+
+                    var stack = (System.Collections.Generic.Stack<object>)stackVar.Value!;
+                    if (stack.Count == 0)
+                        return (null, DataType.INT, $"Stack '{stackName}' is empty.");
+
+                    DataType elemType = TypeHelper.ElementType(stackVar.DataType);
+                    return (stack.Peek(), elemType, null);
+                }
+
+                // Array indexing: ident [ expr ]
+                if (Match(TokenKind.LBRACKET))
+                {
+                    if (!_symbols.TryGetValue(name, out var arrVar))
+                        return (null, DataType.INT, $"Undefined array '{name}'.");
+                    if (!TypeHelper.IsArrayType(arrVar.DataType))
+                        return (null, DataType.INT, $"'{name}' is not an array.");
+                    if (!arrVar.IsInitialized)
+                        return (null, DataType.INT, $"Array '{name}' is uninitialized.");
+
+                    var indexResult = ParseExpression();
+                    if (indexResult.error != null) return indexResult;
+                    if (indexResult.type != DataType.INT)
+                        return (null, DataType.INT, $"Array index must be INT, got {indexResult.type}.");
+
+                    if (!Match(TokenKind.RBRACKET))
+                        return (null, DataType.INT, $"Missing ']' after array index.");
+
+                    int idx = (int)indexResult.value!;
+                    var arr = (object[])arrVar.Value!;
+                    if (idx < 0 || idx >= arr.Length)
+                        return (null, DataType.INT, $"Array index {idx} out of bounds (size {arr.Length}).");
+
+                    object? elem = arr[idx];
+                    DataType elemType = TypeHelper.ElementType(arrVar.DataType);
+
+                    if (elem == null && elemType != DataType.STRING)
+                        return (null, elemType, $"Array element '{name}[{idx}]' is uninitialized.");
+
+                    return (elem, elemType, null);
+                }
+
                 if (!_symbols.TryGetValue(name, out var variable))
                     return (null, DataType.INT, $"Undefined variable '{name}'.");
                 if (!variable.IsInitialized)
