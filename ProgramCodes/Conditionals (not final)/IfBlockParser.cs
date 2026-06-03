@@ -65,6 +65,8 @@ namespace LexorInterpreter.ProgramCodes
 
                 if (IsElseIfHeader(content))
                 {
+                    if (hasElse)
+                        return (null, $"Line {lines[i].LineNumber}: Unexpected ELSE IF after ELSE — ELSE must be the last branch.");
                     var (elseIfBranch, elseIfErr) = ParseElseIfHeader(lines[i]);
                     if (elseIfErr != null) return (null, elseIfErr);
                     i++;
@@ -81,6 +83,9 @@ namespace LexorInterpreter.ProgramCodes
                 }
                 else if (Syntax.IsKeywordLine(content, "ELSE"))
                 {
+                    if (hasElse)
+                        return (null, $"Line {lines[i].LineNumber}: Unexpected ELSE after ELSE — ELSE must be the last branch.");
+
                     int elseLine = lines[i].LineNumber;
                     i++;
 
