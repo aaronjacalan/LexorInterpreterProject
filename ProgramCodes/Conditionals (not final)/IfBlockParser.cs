@@ -37,7 +37,7 @@ namespace LexorInterpreter.ProgramCodes
 
             // Expect START IF.
             if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
-                return (null, $"Line {lines[i > 0 ? i - 1 : 0].LineNumber}: Expected 'START IF' after IF condition.");
+                return (null, "Expected 'START IF' after IF condition.");
             i++;
 
             // Collect body until the matching END IF (depth-aware).
@@ -59,20 +59,20 @@ namespace LexorInterpreter.ProgramCodes
                 if (hasElse)
                 {
                     if (IsElseBranchHeader(content))
-                        return (null, $"Line {lines[i].LineNumber}: Unexpected '{content}' after ELSE — ELSE must be the last branch.");
+                        return (null, $"Unexpected '{content}' after ELSE — ELSE must be the last branch.");
                     break;
                 }
 
                 if (IsElseIfHeader(content))
                 {
                     if (hasElse)
-                        return (null, $"Line {lines[i].LineNumber}: Unexpected ELSE IF after ELSE — ELSE must be the last branch.");
+                        return (null, "Unexpected ELSE IF after ELSE — ELSE must be the last branch.");
                     var (elseIfBranch, elseIfErr) = ParseElseIfHeader(lines[i]);
                     if (elseIfErr != null) return (null, elseIfErr);
                     i++;
 
                     if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
-                        return (null, $"Line {lines[i - 1].LineNumber}: Expected 'START IF' after ELSE IF condition.");
+                        return (null, "Expected 'START IF' after ELSE IF condition.");
                     i++;
 
                     var (elseIfBody, afterElseIfBody, elseIfBodyErr) = CollectBody(lines, i);
@@ -84,13 +84,13 @@ namespace LexorInterpreter.ProgramCodes
                 else if (Syntax.IsKeywordLine(content, "ELSE"))
                 {
                     if (hasElse)
-                        return (null, $"Line {lines[i].LineNumber}: Unexpected ELSE after ELSE — ELSE must be the last branch.");
+                        return (null, "Unexpected ELSE after ELSE — ELSE must be the last branch.");
 
                     int elseLine = lines[i].LineNumber;
                     i++;
 
                     if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
-                        return (null, $"Line {elseLine}: Expected 'START IF' after ELSE.");
+                        return (null, "Expected 'START IF' after ELSE.");
                     i++;
 
                     var (elseBody, afterElseBody, elseBodyErr) = CollectBody(lines, i);
@@ -122,7 +122,7 @@ namespace LexorInterpreter.ProgramCodes
             (int LineNumber, string Content) line)
         {
             if (!TryExtractParenthesizedCondition(line.Content, new[] { "IF" }, out string? condition, out string? error))
-                return (null, $"Line {line.LineNumber}: {error}");
+                return (null, error);
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
         }
@@ -131,7 +131,7 @@ namespace LexorInterpreter.ProgramCodes
             (int LineNumber, string Content) line)
         {
             if (!TryExtractParenthesizedCondition(line.Content, new[] { "ELSE", "IF" }, out string? condition, out string? error))
-                return (null, $"Line {line.LineNumber}: {error}");
+                return (null, error);
 
             return (new IfBranch { Condition = condition, ConditionLine = line.LineNumber }, null);
         }
@@ -251,7 +251,7 @@ namespace LexorInterpreter.ProgramCodes
             int i = start + 1;
 
             if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
-                return (start, $"Line {lines[start].LineNumber}: Expected 'START IF' after IF condition.");
+                return (start, "Expected 'START IF' after IF condition.");
 
             i++;
             var (_, afterFirst, err) = CollectSimpleBody(lines, i);
@@ -263,7 +263,7 @@ namespace LexorInterpreter.ProgramCodes
                 i++; // skip ELSE IF (...) or ELSE
 
                 if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "IF"))
-                    return (start, $"Line {lines[i - 1].LineNumber}: Expected 'START IF' after {lines[i - 1].Content}.");
+                    return (start, $"Expected 'START IF' after {lines[i - 1].Content}.");
 
                 i++;
                 var (_, afterBranch, branchErr) = CollectSimpleBody(lines, i);

@@ -132,7 +132,7 @@ namespace LexorInterpreter.ProgramCodes
                 var operand = ParseUnary();
                 if (operand.error != null) return operand;
                 if (operand.type != DataType.BOOL)
-                    return (null, DataType.BOOL, $"Line {_lineNumber}: NOT expects a BOOL expression.");
+                    return (null, DataType.BOOL, $"NOT expects a BOOL expression.");
                 return (!(bool)operand.value!, DataType.BOOL, null);
             }
 
@@ -141,7 +141,7 @@ namespace LexorInterpreter.ProgramCodes
                 var operand = ParseUnary();
                 if (operand.error != null) return operand;
                 if (!ExpressionOperations.IsNumeric(operand.type))
-                    return (null, DataType.INT, $"Line {_lineNumber}: Unary + expects a numeric expression.");
+                    return (null, DataType.INT, $"Unary + expects a numeric expression.");
                 return operand;
             }
 
@@ -150,7 +150,7 @@ namespace LexorInterpreter.ProgramCodes
                 var operand = ParseUnary();
                 if (operand.error != null) return operand;
                 if (!ExpressionOperations.IsNumeric(operand.type))
-                    return (null, DataType.INT, $"Line {_lineNumber}: Unary - expects a numeric expression.");
+                    return (null, DataType.INT, $"Unary - expects a numeric expression.");
                 return operand.type == DataType.FLOAT
                     ? (-(float)operand.value!, DataType.FLOAT, null)
                     : (-(int)operand.value!, DataType.INT, null);
@@ -166,25 +166,25 @@ namespace LexorInterpreter.ProgramCodes
                 var inner = ParseExpression();
                 if (inner.error != null) return inner;
                 if (!Match(TokenKind.RPAREN))
-                    return (null, DataType.INT, $"Line {_lineNumber}: Missing ')'.");
+                    return (null, DataType.INT, $"Missing ')'.");
                 return inner;
             }
 
             if (Match(TokenKind.INT_LITERAL, out var intTok))
             {
                 if (!int.TryParse(intTok!.Lexeme, NumberStyles.Integer, CultureInfo.InvariantCulture, out int intVal))
-                    return (null, DataType.INT, $"Line {_lineNumber}: INT literal out of range.");
+                    return (null, DataType.INT, $"INT literal out of range.");
                 return (intVal, DataType.INT, null);
             }
 
             if (Match(TokenKind.FLOAT_LITERAL, out var floatTok))
             {
                 if (!float.TryParse(floatTok!.Lexeme, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatVal))
-                    return (null, DataType.FLOAT, $"Line {_lineNumber}: FLOAT literal out of range.");
+                    return (null, DataType.FLOAT, $"FLOAT literal out of range.");
                 if (float.IsInfinity(floatVal) || float.IsNaN(floatVal))
-                    return (null, DataType.FLOAT, $"Line {_lineNumber}: FLOAT literal out of range.");
+                    return (null, DataType.FLOAT, $"FLOAT literal out of range.");
                 if (floatVal == 0f && floatTok.Lexeme.StartsWith("-", StringComparison.Ordinal))
-                    return (null, DataType.FLOAT, $"Line {_lineNumber}: -0.0 is not allowed.");
+                    return (null, DataType.FLOAT, $"-0.0 is not allowed.");
                 return (floatVal, DataType.FLOAT, null);
             }
 
@@ -195,7 +195,7 @@ namespace LexorInterpreter.ProgramCodes
             {
                 if (boolTok!.Lexeme == "TRUE") return (true, DataType.BOOL, null);
                 if (boolTok.Lexeme == "FALSE") return (false, DataType.BOOL, null);
-                return (null, DataType.BOOL, $"Line {_lineNumber}: BOOL literals must be uppercase TRUE/FALSE.");
+                return (null, DataType.BOOL, $"BOOL literals must be uppercase TRUE/FALSE.");
             }
 
             if (Match(TokenKind.STRING_LITERAL, out var stringTok))
@@ -205,13 +205,13 @@ namespace LexorInterpreter.ProgramCodes
             {
                 string name = identTok!.Lexeme;
                 if (!_symbols.TryGetValue(name, out var variable))
-                    return (null, DataType.INT, $"Line {_lineNumber}: Undefined variable '{name}'.");
+                    return (null, DataType.INT, $"Undefined variable '{name}'.");
                 if (!variable.IsInitialized)
-                    return (null, DataType.INT, $"Line {_lineNumber}: Variable '{name}' is uninitialized.");
+                    return (null, DataType.INT, $"Variable '{name}' is uninitialized.");
                 return (variable.Value, variable.DataType, null);
             }
 
-            return (null, DataType.INT, $"Line {_lineNumber}: Unexpected token '{Peek().Lexeme}'.");
+            return (null, DataType.INT, $"Unexpected token '{Peek().Lexeme}'.");
         }
 
         private Token Peek() => _tokens[_pos];

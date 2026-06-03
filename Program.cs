@@ -28,7 +28,7 @@ class Program
 
         if (args.Length == 0)
         {
-            Fail("[ERROR - Line 0] Usage: LexorInterpreter <filename>");
+            Fail("[ERROR] Usage: LexorInterpreter <filename>");
             return;
         }
 
@@ -36,14 +36,14 @@ class Program
 
         if (!File.Exists(filePath))
         {
-            Fail($"[ERROR - Line 0] File not found -> '{filePath}'");
+            Fail($"[ERROR] File not found -> '{filePath}'");
             return;
         }
 
         string sourceCode = File.ReadAllText(filePath);
         if (string.IsNullOrWhiteSpace(sourceCode))
         {
-            Fail("[ERROR - Line 0] Source file is empty.");
+            Fail("[ERROR] Source file is empty.");
             return;
         }
 

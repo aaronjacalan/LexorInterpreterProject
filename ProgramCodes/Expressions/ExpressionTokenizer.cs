@@ -31,7 +31,7 @@ namespace LexorInterpreter.ProgramCodes
                     else if (upper is "OR") tokens.Add(new Token(TokenKind.OR, "OR"));
                     else if (upper is "NOT") tokens.Add(new Token(TokenKind.NOT, "NOT"));
                     else if (ident is "TRUE" or "FALSE")
-                        return (null, $"Line {lineNumber}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").");
+                        return (null, $"BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").");
                     else tokens.Add(new Token(TokenKind.IDENT, ident));
                     continue;
                 }
@@ -49,13 +49,13 @@ namespace LexorInterpreter.ProgramCodes
                     _i++; // skip "
                     string inner = ReadUntil('"');
                     if (_i >= _src.Length || _src[_i] != '"')
-                        return (null, $"Line {lineNumber}: Unterminated string literal in expression.");
+                        return (null, $"Unterminated string literal in expression.");
                     _i++; // closing "
 
                     if (inner is "TRUE" or "FALSE")
                         tokens.Add(new Token(TokenKind.BOOL_LITERAL, inner));
                     else if (inner is "true" or "false")
-                        return (null, $"Line {lineNumber}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.");
+                        return (null, $"BOOL literals must be uppercase TRUE/FALSE and inside double quotes.");
                     else
                         tokens.Add(new Token(TokenKind.STRING_LITERAL, inner));
                     continue;
@@ -64,10 +64,10 @@ namespace LexorInterpreter.ProgramCodes
                 if (c == '\'')
                 {
                     _i++; // skip '
-                    if (_i >= _src.Length) return (null, $"Line {lineNumber}: Unterminated CHAR literal in expression.");
+                    if (_i >= _src.Length) return (null, $"Unterminated CHAR literal in expression.");
                     char ch = _src[_i++];
                     if (_i >= _src.Length || _src[_i] != '\'')
-                        return (null, $"Line {lineNumber}: CHAR literal must be a single character like 'c'.");
+                        return (null, $"CHAR literal must be a single character like 'c'.");
                     _i++; // closing '
                     tokens.Add(new Token(TokenKind.CHAR_LITERAL, ch.ToString(CultureInfo.InvariantCulture)));
                     continue;
@@ -117,11 +117,11 @@ namespace LexorInterpreter.ProgramCodes
                         }
                         else
                         {
-                            return (null, $"Line {lineNumber}: Single '=' is not valid inside an expression.");
+                            return (null, $"Single '=' is not valid inside an expression.");
                         }
                         break;
                     default:
-                        return (null, $"Line {lineNumber}: Unexpected character '{c}' in expression.");
+                        return (null, $"Unexpected character '{c}' in expression.");
                 }
             }
 

@@ -15,7 +15,7 @@ namespace LexorInterpreter.ProgramCodes
             // Split "x = y = 4" into ["x", "y", "4"].
             var parts = SplitOnAssignment(line);
             if (parts.Count < 2)
-                return $"Line {lineNumber}: Invalid assignment statement.";
+                return $"Invalid assignment statement.";
 
             string rawValue  = parts[^1].Trim();
             var    targets   = parts[..^1];
@@ -23,7 +23,7 @@ namespace LexorInterpreter.ProgramCodes
             // Use the first target's type to parse the value.
             string firstName = targets[0].Trim();
             if (!symbolTable.TryGetValue(firstName, out Variable? anchor))
-                return $"Line {lineNumber}: Undefined variable '{firstName}'.";
+                return $"Undefined variable '{firstName}'.";
 
             var (resolved, err) = ResolveValue(rawValue, anchor.DataType, lineNumber, symbolTable);
             if (err != null) return err;
@@ -32,7 +32,7 @@ namespace LexorInterpreter.ProgramCodes
             {
                 string name = t.Trim();
                 if (!symbolTable.TryGetValue(name, out Variable? variable))
-                    return $"Line {lineNumber}: Undefined variable '{name}'.";
+                    return $"Undefined variable '{name}'.";
 
                 variable.Value = resolved;
                 variable.IsInitialized = true;
@@ -81,7 +81,7 @@ namespace LexorInterpreter.ProgramCodes
             if (symbolTable.TryGetValue(trimmed, out Variable? refVar))
             {
                 if (refVar.DataType != expectedType)
-                    return (null, $"Line {lineNumber}: Type mismatch — cannot assign {refVar.DataType} to {expectedType}.");
+                    return (null, $"Type mismatch — cannot assign {refVar.DataType} to {expectedType}.");
                 return (refVar.Value, null);
             }
 
@@ -89,10 +89,12 @@ namespace LexorInterpreter.ProgramCodes
             var (value, actualType, exprErr) = ExpressionEvaluator.Evaluate(trimmed, lineNumber, symbolTable);
             if (exprErr != null) return (null, exprErr);
 
-            // Enforce strong typing (no implicit widening).
             if (expectedType == actualType) return (value, null);
 
-            return (null, $"Line {lineNumber}: Type mismatch — cannot assign {actualType} to {expectedType}.");
+            if (expectedType == DataType.FLOAT && actualType == DataType.INT)
+                return ((float)(int)value!, null);
+
+            return (null, $"Type mismatch — cannot assign {actualType} to {expectedType}.");
         }
     }
 }

@@ -22,7 +22,7 @@ namespace LexorInterpreter.ProgramCodes
             if (result.error != null) return (null, DataType.INT, result.error);
 
             if (!parser.IsAtEnd)
-                return (null, DataType.INT, $"Line {lineNumber}: Unexpected token '{parser.PeekLexeme()}'.");
+                return (null, DataType.INT, $"Unexpected token '{parser.PeekLexeme()}'.");
 
             return (result.value, result.type, null);
         }

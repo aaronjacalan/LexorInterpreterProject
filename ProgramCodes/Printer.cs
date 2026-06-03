@@ -13,7 +13,7 @@ namespace LexorInterpreter.ProgramCodes
             Dictionary<string, Variable> symbolTable)
         {
             if (!Syntax.TryReadCommand(line, "PRINT", out string rest))
-                return $"Line {lineNumber}: Malformed PRINT statement.";
+                return $"Malformed PRINT statement.";
 
             var output  = new System.Text.StringBuilder();
 

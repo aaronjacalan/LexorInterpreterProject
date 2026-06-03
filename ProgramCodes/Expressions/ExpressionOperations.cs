@@ -11,7 +11,7 @@ namespace LexorInterpreter.ProgramCodes
             (object? value, DataType type, string? error) right)
         {
             if (left.type != DataType.BOOL || right.type != DataType.BOOL)
-                return (null, DataType.BOOL, $"Line {lineNumber}: {op} expects two BOOL expressions.");
+                return (null, DataType.BOOL, $"{op} expects two BOOL expressions.");
 
             bool a = (bool)left.value!;
             bool b = (bool)right.value!;
@@ -28,7 +28,7 @@ namespace LexorInterpreter.ProgramCodes
             if (op is TokenKind.GT or TokenKind.LT or TokenKind.GTE or TokenKind.LTE)
             {
                 if (!IsNumeric(left.type) || !IsNumeric(right.type))
-                    return (null, DataType.BOOL, $"Line {lineNumber}: Comparison expects numeric expressions.");
+                    return (null, DataType.BOOL, $"Comparison expects numeric expressions.");
 
                 float a = AsFloat(left);
                 float b = AsFloat(right);
@@ -57,13 +57,13 @@ namespace LexorInterpreter.ProgramCodes
                 }
                 else
                 {
-                    return (null, DataType.BOOL, $"Line {lineNumber}: Cannot compare {left.type} with {right.type}.");
+                    return (null, DataType.BOOL, $"Cannot compare {left.type} with {right.type}.");
                 }
 
                 return (op == TokenKind.EQEQ ? eq : !eq, DataType.BOOL, null);
             }
 
-            return (null, DataType.BOOL, $"Line {lineNumber}: Unsupported comparison operator.");
+            return (null, DataType.BOOL, $"Unsupported comparison operator.");
         }
 
         internal static (object? value, DataType type, string? error) ApplyArithmetic(
@@ -73,7 +73,7 @@ namespace LexorInterpreter.ProgramCodes
             (object? value, DataType type, string? error) right)
         {
             if (!IsNumeric(left.type) || !IsNumeric(right.type))
-                return (null, DataType.INT, $"Line {lineNumber}: Arithmetic expects numeric expressions.");
+                return (null, DataType.INT, $"Arithmetic expects numeric expressions.");
 
             bool floatMode = left.type == DataType.FLOAT || right.type == DataType.FLOAT;
             if (floatMode)
@@ -81,7 +81,7 @@ namespace LexorInterpreter.ProgramCodes
                 float a = AsFloat(left);
                 float b = AsFloat(right);
                 if ((op == TokenKind.SLASH || op == TokenKind.PERCENT) && b == 0f)
-                    return (null, DataType.FLOAT, $"Line {lineNumber}: Division by zero.");
+                    return (null, DataType.FLOAT, $"Division by zero.");
 
                 float res = op switch
                 {
@@ -94,7 +94,7 @@ namespace LexorInterpreter.ProgramCodes
                 };
 
                 if (float.IsInfinity(res) || float.IsNaN(res))
-                    return (null, DataType.FLOAT, $"Line {lineNumber}: FLOAT overflow or invalid value.");
+                    return (null, DataType.FLOAT, $"FLOAT overflow or invalid value.");
 
                 return (res, DataType.FLOAT, null);
             }
@@ -102,7 +102,7 @@ namespace LexorInterpreter.ProgramCodes
             int ai = (int)left.value!;
             int bi = (int)right.value!;
             if ((op == TokenKind.SLASH || op == TokenKind.PERCENT) && bi == 0)
-                return (null, DataType.INT, $"Line {lineNumber}: Division by zero.");
+                return (null, DataType.INT, $"Division by zero.");
 
             try
             {
@@ -119,7 +119,7 @@ namespace LexorInterpreter.ProgramCodes
             }
             catch (OverflowException)
             {
-                return (null, DataType.INT, $"Line {lineNumber}: INT overflow.");
+                return (null, DataType.INT, $"INT overflow.");
             }
         }
 

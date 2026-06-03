@@ -18,17 +18,17 @@ namespace LexorInterpreter.ProgramCodes
         {
             // Remove "DECLARE" prefix and read the type token.
             if (!Syntax.StartsWithKeyword(line, "DECLARE", out string rest))
-                return $"Line {lineNumber}: Invalid DECLARE syntax.";
+                return $"Invalid DECLARE syntax.";
 
             int spaceIdx = rest.IndexOfAny(new[] { ' ', '\t' });
             if (spaceIdx < 0)
-                return $"Line {lineNumber}: Invalid DECLARE syntax — missing type or variable name.";
+                return $"Invalid DECLARE syntax — missing type or variable name.";
 
             string typeName = rest[..spaceIdx].Trim().ToUpper();
             string varsPart = rest[spaceIdx..].Trim();
 
             if (!Enum.TryParse(typeName, out DataType dataType))
-                return $"Line {lineNumber}: Unknown data type '{typeName}'.";
+                return $"Unknown data type '{typeName}'.";
 
             foreach (string decl in SplitDeclarations(varsPart))
             {
@@ -53,15 +53,15 @@ namespace LexorInterpreter.ProgramCodes
 
                 // Validate the variable name.
                 if (!ValidName.IsMatch(varName))
-                    return $"Line {lineNumber}: Invalid variable name '{varName}'.";
+                    return $"Invalid variable name '{varName}'.";
 
                 // Validate the variable name is not a reserved word.
                 if (Lexer.IsReservedWord(varName))
-                    return $"Line {lineNumber}: '{varName}' is a reserved word and cannot be a variable name.";
+                    return $"'{varName}' is a reserved word and cannot be a variable name.";
 
                 // Validate the variable name is not already declared.
                 if (symbolTable.ContainsKey(varName))
-                    return $"Line {lineNumber}: Variable '{varName}' is already declared.";
+                    return $"Variable '{varName}' is already declared.";
 
                 symbolTable[varName] = new Variable(varName, dataType, initValue, hasInitValue);
             }
@@ -101,24 +101,22 @@ namespace LexorInterpreter.ProgramCodes
             {
                 case DataType.INT:
                     if (raw.Contains('.'))
-                        return $"Line {lineNum}: INT literals must not include a decimal point.";
+                        return $"INT literals must not include a decimal point.";
                     if (int.TryParse(raw, out int iv)) { value = iv; return null; }
                     if (long.TryParse(raw, out _))
-                        return $"Line {lineNum}: INT literal out of range.";
-                    return $"Line {lineNum}: '{raw}' is not a valid INT.";
+                        return $"INT literal out of range.";
+                    return $"'{raw}' is not a valid INT.";
 
                 case DataType.FLOAT:
-                    if (!raw.Contains('.'))
-                        return $"Line {lineNum}: FLOAT literals must include a decimal point.";
                     if (float.TryParse(raw,
                         System.Globalization.NumberStyles.Float,
                         System.Globalization.CultureInfo.InvariantCulture,
                         out float fv))
                     {
                         if (float.IsInfinity(fv) || float.IsNaN(fv))
-                            return $"Line {lineNum}: FLOAT literal out of range.";
+                            return $"FLOAT literal out of range.";
                         if (fv == 0f && raw.StartsWith("-", StringComparison.Ordinal))
-                            return $"Line {lineNum}: -0.0 is not allowed.";
+                            return $"-0.0 is not allowed.";
                         value = fv;
                         return null;
                     }
@@ -126,13 +124,13 @@ namespace LexorInterpreter.ProgramCodes
                         System.Globalization.NumberStyles.Float,
                         System.Globalization.CultureInfo.InvariantCulture,
                         out _))
-                        return $"Line {lineNum}: FLOAT literal out of range.";
-                    return $"Line {lineNum}: '{raw}' is not a valid FLOAT.";
+                        return $"FLOAT literal out of range.";
+                    return $"'{raw}' is not a valid FLOAT.";
 
                 case DataType.CHAR:
                     if (raw.Length == 3 && raw[0] == '\'' && raw[2] == '\'')
                     { value = raw[1]; return null; }
-                    return $"Line {lineNum}: '{raw}' is not a valid CHAR — use 'c'.";
+                    return $"'{raw}' is not a valid CHAR — use 'c'.";
 
                 case DataType.BOOL:
                     if (raw.Length >= 2 && raw[0] == '"' && raw[^1] == '"')
@@ -141,12 +139,12 @@ namespace LexorInterpreter.ProgramCodes
                         if (b == "TRUE")  { value = true;  return null; }
                         if (b == "FALSE") { value = false; return null; }
                         if (b is "true" or "false")
-                            return $"Line {lineNum}: BOOL literals must be uppercase TRUE/FALSE and inside double quotes.";
-                        return $"Line {lineNum}: '{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
+                            return $"BOOL literals must be uppercase TRUE/FALSE and inside double quotes.";
+                        return $"'{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
                     }
                     if (raw is "TRUE" or "FALSE" or "true" or "false")
-                        return $"Line {lineNum}: BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").";
-                    return $"Line {lineNum}: '{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
+                        return $"BOOL literals must be in double quotes (\"TRUE\"/\"FALSE\").";
+                    return $"'{raw}' is not a valid BOOL — use \"TRUE\" or \"FALSE\".";
 
                 case DataType.STRING:
                     if (raw.Length >= 2 && raw[0] == '"' && raw[^1] == '"')
@@ -154,10 +152,10 @@ namespace LexorInterpreter.ProgramCodes
                         value = raw[1..^1];
                         return null;
                     }
-                    return $"Line {lineNum}: '{raw}' is not a valid STRING - use double quotes.";
+                    return $"'{raw}' is not a valid STRING - use double quotes.";
 
                 default:
-                    return $"Line {lineNum}: Unsupported type for literal parsing.";
+                    return $"Unsupported type for literal parsing.";
             }
         }
 

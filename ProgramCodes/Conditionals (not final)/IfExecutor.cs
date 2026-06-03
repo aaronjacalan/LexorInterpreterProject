@@ -28,7 +28,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (error != null) return error;
 
                 if (type != DataType.BOOL)
-                    return $"Line {branch.ConditionLine}: IF condition must evaluate to BOOL, got {type}.";
+                    return $"IF condition must evaluate to BOOL, got {type}.";
 
                 if ((bool)value!)
                     return executeLines(branch.Body);

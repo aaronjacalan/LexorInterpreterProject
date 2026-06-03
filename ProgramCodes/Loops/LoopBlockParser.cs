@@ -37,7 +37,7 @@ namespace LexorInterpreter.ProgramCodes
             if (Syntax.TryParenthesizedHeader(content, new[] { "REPEAT", "WHEN" }, out _))
                 return ParseRepeat(lines, startIndex);
 
-            return (null, $"Line {lineNum}: Expected FOR or REPEAT WHEN loop header.");
+            return (null, $"Expected FOR or REPEAT WHEN loop header.");
         }
 
         private static (LoopBlock? block, string? error) ParseFor(
@@ -47,23 +47,23 @@ namespace LexorInterpreter.ProgramCodes
             var (lineNum, content) = lines[i];
 
             if (!Syntax.TryParenthesizedHeader(content, new[] { "FOR" }, out string inner))
-                return (null, $"Line {lineNum}: Malformed FOR header. Expected: FOR (<init>, <cond>, <update>)");
+                return (null, $"Malformed FOR header. Expected: FOR (<init>, <cond>, <update>)");
 
             var parts = SplitHeaderParts(inner);
             if (parts == null || parts.Count != 3)
-                return (null, $"Line {lineNum}: FOR header must have exactly three parts separated by ','.");
+                return (null, $"FOR header must have exactly three parts separated by ','.");
 
             string init   = parts[0].Trim();
             string cond   = parts[1].Trim();
             string update = parts[2].Trim();
 
             if (string.IsNullOrWhiteSpace(init) || string.IsNullOrWhiteSpace(cond) || string.IsNullOrWhiteSpace(update))
-                return (null, $"Line {lineNum}: FOR header parts (init; condition; update) must not be empty.");
+                return (null, $"FOR header parts (init; condition; update) must not be empty.");
 
             i++;
 
             if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "FOR"))
-                return (null, $"Line {lineNum}: Expected 'START FOR' after FOR header.");
+                return (null, $"Expected 'START FOR' after FOR header.");
             i++;
 
             // Collect body until matching END FOR (depth-aware).
@@ -90,15 +90,15 @@ namespace LexorInterpreter.ProgramCodes
             var (lineNum, content) = lines[i];
 
             if (!Syntax.TryParenthesizedHeader(content, new[] { "REPEAT", "WHEN" }, out string condition))
-                return (null, $"Line {lineNum}: Malformed REPEAT header. Expected: REPEAT WHEN (<bool expr>)");
+                return (null, $"Malformed REPEAT header. Expected: REPEAT WHEN (<bool expr>)");
 
             if (string.IsNullOrWhiteSpace(condition))
-                return (null, $"Line {lineNum}: REPEAT WHEN condition must not be empty.");
+                return (null, $"REPEAT WHEN condition must not be empty.");
 
             i++;
 
             if (i >= lines.Count || !Syntax.IsKeywordLine(lines[i].Content, "START", "REPEAT"))
-                return (null, $"Line {lineNum}: Expected 'START REPEAT' after REPEAT WHEN header.");
+                return (null, $"Expected 'START REPEAT' after REPEAT WHEN header.");
             i++;
 
             // Collect body until matching END REPEAT (depth-aware).

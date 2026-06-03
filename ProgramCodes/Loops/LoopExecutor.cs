@@ -39,7 +39,7 @@ namespace LexorInterpreter.ProgramCodes
             while (true)
             {
                 if (++iterations > MaxIterations)
-                    return $"Line {lineNum}: FOR loop exceeded {MaxIterations} iterations. Possible infinite loop.";
+                    return $"FOR loop exceeded {MaxIterations} iterations. Possible infinite loop.";
 
                 // 2. Condition — stop when false.
                 var (condValue, condType, condErr) = ExpressionEvaluator.Evaluate(
@@ -48,7 +48,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (condErr != null) return condErr;
 
                 if (condType != DataType.BOOL)
-                    return $"Line {lineNum}: FOR loop condition must evaluate to BOOL, got {condType}.";
+                    return $"FOR loop condition must evaluate to BOOL, got {condType}.";
 
                 if (!(bool)condValue!)
                     break;
@@ -79,7 +79,7 @@ namespace LexorInterpreter.ProgramCodes
             while (true)
             {
                 if (++iterations > MaxIterations)
-                    return $"Line {lineNum}: REPEAT loop exceeded {MaxIterations} iterations. Possible infinite loop.";
+                    return $"REPEAT loop exceeded {MaxIterations} iterations. Possible infinite loop.";
 
                 // 1. Condition — stop when false.
                 var (condValue, condType, condErr) = ExpressionEvaluator.Evaluate(
@@ -88,7 +88,7 @@ namespace LexorInterpreter.ProgramCodes
                 if (condErr != null) return condErr;
 
                 if (condType != DataType.BOOL)
-                    return $"Line {lineNum}: REPEAT WHEN condition must evaluate to BOOL, got {condType}.";
+                    return $"REPEAT WHEN condition must evaluate to BOOL, got {condType}.";
 
                 if (!(bool)condValue!)
                     break;

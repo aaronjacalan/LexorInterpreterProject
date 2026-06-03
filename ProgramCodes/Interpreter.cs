@@ -22,7 +22,7 @@ namespace LexorInterpreter.ProgramCodes
 
             var body = ExtractBody(lines);
             if (body.Count == 0)
-                return NormalizeError("[ERROR - Line 0] Script body is empty.");
+                return NormalizeError("Script body is empty.");
 
             // Split the body into DECLARE lines and executable statements.
             int boundary     = FindDeclareBoundary(body);
@@ -59,11 +59,11 @@ namespace LexorInterpreter.ProgramCodes
                 if (IsIfStatement(content))
                 {
                     var (block, parseErr) = IfBlockParser.Parse(lines, i);
-                    if (parseErr != null) return $"Line {lineNum}: {parseErr}";
+                    if (parseErr != null) return parseErr;
 
                     _nestingDepth++;
                     if (_nestingDepth > MaxNestingDepth)
-                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
+                        Console.WriteLine($"[WARNING] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
 
                     string? execErr = IfExecutor.Execute(block!, _symbolTable, ExecuteLines);
                     if (execErr != null) return execErr;
@@ -79,7 +79,7 @@ namespace LexorInterpreter.ProgramCodes
 
                     _nestingDepth++;
                     if (_nestingDepth > MaxNestingDepth)
-                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
+                        Console.WriteLine($"[WARNING] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
 
                     string? execErr = LoopExecutor.Execute(loop!, _symbolTable, ExecuteLines, ExecuteStatement);
                     if (execErr != null) return execErr;
@@ -95,7 +95,7 @@ namespace LexorInterpreter.ProgramCodes
 
                     _nestingDepth++;
                     if (_nestingDepth > MaxNestingDepth)
-                        Console.WriteLine($"[WARNING - Line {lineNum}] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
+                        Console.WriteLine($"[WARNING] Deep nesting detected ({_nestingDepth} levels). Consider refactoring.");
 
                     string? execErr = LoopExecutor.Execute(loop!, _symbolTable, ExecuteLines, ExecuteStatement);
                     if (execErr != null) return execErr;
@@ -125,35 +125,35 @@ namespace LexorInterpreter.ProgramCodes
             if (IsAssignment(line))
                 return VariableAssignor.Execute(line, lineNumber, _symbolTable);
 
-            return $"Line {lineNumber}: Unrecognized statement '{line}'.";
+            return $"Unrecognized statement '{line}'.";
         }
 
         // Validates SCRIPT AREA / START SCRIPT / END SCRIPT structure.
         private static string? ValidateStructure(List<(int LineNumber, string Content)> lines)
         {
             if (lines.Count == 0)
-                return "[ERROR - Line 0] Source file is empty.";
+                return "Source file is empty.";
 
             if (!Syntax.IsKeywordLine(lines[0].Content, "SCRIPT", "AREA"))
-                return $"Line {lines[0].LineNumber}: Program must begin with 'SCRIPT AREA'.";
+                return "Program must begin with 'SCRIPT AREA'.";
 
             var startLines = lines.Where(l => Syntax.IsKeywordLine(l.Content, "START", "SCRIPT")).Select(l => l.LineNumber).ToList();
             var endLines   = lines.Where(l => Syntax.IsKeywordLine(l.Content, "END", "SCRIPT")).Select(l => l.LineNumber).ToList();
 
-            if (startLines.Count == 0) return "[ERROR - Line 0] Missing 'START SCRIPT'.";
-            if (endLines.Count == 0)   return "[ERROR - Line 0] Missing 'END SCRIPT'.";
+            if (startLines.Count == 0) return "Missing 'START SCRIPT'.";
+            if (endLines.Count == 0)   return "Missing 'END SCRIPT'.";
 
             if (startLines.Count > 1)
-                return $"[ERROR - Line {startLines[1]}] Duplicate 'START SCRIPT'.";
+                return "Duplicate 'START SCRIPT'.";
 
             if (endLines.Count > 1)
-                return $"[ERROR - Line {endLines[1]}] Duplicate 'END SCRIPT'.";
+                return "Duplicate 'END SCRIPT'.";
 
             int startIdx = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "START", "SCRIPT"));
             int endIdx   = lines.FindIndex(l => Syntax.IsKeywordLine(l.Content, "END", "SCRIPT"));
 
             if (startIdx >= endIdx)
-                return $"[ERROR - Line {lines[endIdx].LineNumber}] 'END SCRIPT' must come after 'START SCRIPT'.";
+                return "'END SCRIPT' must come after 'START SCRIPT'.";
 
             return null;
         }
@@ -191,28 +191,37 @@ namespace LexorInterpreter.ProgramCodes
         // Formats an interpreter error message.
         private static string NormalizeError(string message)
         {
-            if (message.StartsWith("[ERROR - Line", StringComparison.Ordinal)) return message;
-
-            const string prefix = "Line ";
-            if (message.StartsWith(prefix, StringComparison.Ordinal))
-            {
-                int colon = message.IndexOf(':');
-                if (colon > prefix.Length)
-                {
-                    string linePart = message[prefix.Length..colon].Trim();
-                    if (int.TryParse(linePart, out int lineNum))
-                    {
-                        string rest = message[(colon + 1)..].Trim();
-                        return $"[ERROR - Line {lineNum}] {rest}";
-                    }
-                }
-            }
-
-            string cleaned = message;
+            string cleaned = StripLinePrefix(message).Trim();
             if (cleaned.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                 cleaned = cleaned["Error:".Length..].Trim();
 
-            return $"[ERROR - Line 0] {cleaned}";
+            if (cleaned.StartsWith("[ERROR]", StringComparison.Ordinal))
+                return cleaned;
+
+            return $"[ERROR] {cleaned}";
+        }
+
+        private static string StripLinePrefix(string message)
+        {
+            if (message.StartsWith("[ERROR - Line", StringComparison.Ordinal))
+            {
+                int end = message.IndexOf(']');
+                if (end >= 0)
+                    return message[(end + 1)..].Trim();
+            }
+
+            const string prefix = "Line ";
+            if (!message.StartsWith(prefix, StringComparison.Ordinal))
+                return message;
+
+            int colon = message.IndexOf(':');
+            if (colon <= prefix.Length)
+                return message;
+
+            string linePart = message[prefix.Length..colon].Trim();
+            return int.TryParse(linePart, out _)
+                ? message[(colon + 1)..].Trim()
+                : message;
         }
     }
 }
