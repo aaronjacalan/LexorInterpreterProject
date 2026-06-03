@@ -24,8 +24,20 @@ namespace LexorInterpreter.ProgramCodes
             if (body.Count == 0)
                 return NormalizeError("[ERROR - Line 0] Script body is empty.");
 
-            // Execute the statements in order, stopping on first error.
-            string? execErr = ExecuteLines(body);
+            // Split the body into DECLARE lines and executable statements.
+            int boundary     = FindDeclareBoundary(body);
+            var declareLines = body[..boundary];
+            var execLines    = body[boundary..];
+
+            // Process all variable declarations first so later statements can reference them safely.
+            foreach (var (lineNum, content) in declareLines)
+            {
+                string? err = VariableDeclarator.Parse(content, lineNum, _symbolTable);
+                if (err != null) return NormalizeError(err);
+            }
+
+            // Execute the remaining statements in order, stopping on first error.
+            string? execErr = ExecuteLines(execLines);
             if (execErr != null) return NormalizeError(execErr);
 
             Console.WriteLine();
@@ -104,9 +116,6 @@ namespace LexorInterpreter.ProgramCodes
         // Dispatches a single (non-control-flow) statement line.
         private string? ExecuteStatement(string line, int lineNumber)
         {
-            if (Syntax.StartsWithKeyword(line, "DECLARE", out _))
-                return VariableDeclarator.Parse(line, lineNumber, _symbolTable);
-
             if (Syntax.TryReadCommand(line, "PRINT", out _))
                 return Printer.Execute(line, lineNumber, _symbolTable);
 
